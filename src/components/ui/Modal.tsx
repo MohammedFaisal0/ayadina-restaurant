@@ -72,7 +72,7 @@ export function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby={ariaLabelledBy ?? (title ? "modal-title" : undefined)}
@@ -91,7 +91,7 @@ export function Modal({
 
       {/* Panel */}
       <div
-        className={`modal-scroll relative z-10 max-h-[92vh] w-full overflow-y-auto rounded-t-3xl shadow-2xl backdrop-blur-xl sm:rounded-3xl ${sizeClass} ${panelClassName}`}
+        className={`modal-scroll relative z-10 max-h-[85vh] w-full overflow-y-auto rounded-3xl shadow-2xl backdrop-blur-xl ${sizeClass} ${panelClassName}`}
         style={{
           border: "1px solid var(--glass-border)",
           backgroundColor: "var(--glass-bg)",

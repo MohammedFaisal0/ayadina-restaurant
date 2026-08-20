@@ -129,9 +129,10 @@ export function DishModal({ item, onClose }: DishModalProps) {
 
         {dish.allergens.length > 0 ? (
           <div
-            className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3"
+            className="rounded-xl border p-3"
+            style={{ borderColor: "var(--border-gold)", backgroundColor: "var(--border-gold)" }}
           >
-            <h3 className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-amber-300">
+            <h3 className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-brand-gold">
               <AlertTriangle className="size-3.5" />
               {t.common.allergens}
             </h3>
@@ -139,13 +140,14 @@ export function DishModal({ item, onClose }: DishModalProps) {
               {dish.allergens.map((allergen) => (
                 <li
                   key={allergen}
-                  className="list-none rounded-full bg-amber-500/10 px-2 py-0.5 text-xs text-amber-200"
+                  className="list-none rounded-full px-2 py-0.5 text-xs font-medium text-brand-gold"
+                  style={{ backgroundColor: "var(--bg-surface)" }}
                 >
                   {allergen}
                 </li>
               ))}
             </div>
-            <p className="mt-1.5 text-[11px] leading-5 text-amber-100/70">
+            <p className="mt-1.5 text-[11px] leading-5 text-brand-gold opacity-80">
               {t.common.allergenWarning}
             </p>
           </div>

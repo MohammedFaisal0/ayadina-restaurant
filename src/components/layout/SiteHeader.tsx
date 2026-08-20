@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Menu, X, Sun, Moon, ChevronRight, ChevronLeft } from "lucide-react";
+import { Menu, X, Sun, Moon } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useLocale } from "@/i18n/locale-context";
 import { useTheme } from "@/context/ThemeContext";
@@ -160,20 +160,18 @@ export function SiteHeader() {
           <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-4" aria-label="Mobile navigation">
             {navLinks.map(({ href, key }) => {
               const isActive = pathname === href;
-              const Chevron = isRtl ? ChevronLeft : ChevronRight;
               return (
                 <Link
                   key={href}
                   href={href}
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-between rounded-xl px-4 py-3 text-base font-medium transition-all duration-300 ease-in-out"
+                  className="rounded-xl px-4 py-3 text-base font-medium transition-all duration-300 ease-in-out"
                   style={{
                     backgroundColor: isActive ? "var(--brand-gold, #F3A712)" : "transparent",
                     color: isActive ? "#0B0B0B" : "var(--text-secondary)",
                   }}
                 >
                   {t.nav[key]}
-                  <Chevron className="size-4 opacity-50" />
                 </Link>
               );
             })}

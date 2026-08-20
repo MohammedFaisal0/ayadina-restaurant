@@ -2,8 +2,8 @@
 @config "../../tailwind.config.ts";
 
 @theme inline {
-  --color-brand-gold: #f3a712;
-  --color-brand-gold-hover: #d9910d;
+  --color-brand-gold: var(--brand-gold, #f3a712);
+  --color-brand-gold-hover: var(--brand-gold-hover, #d9910d);
   --font-arabic: var(--font-cairo), sans-serif;
   --font-body: var(--font-readex-pro), sans-serif;
 }
@@ -11,6 +11,8 @@
 /* ── Dark Theme (Obsidian Luxury) ── */
 html,
 html[data-theme="dark"] {
+  --brand-gold: #f3a712;
+  --brand-gold-hover: #d9910d;
   --bg-page: #0B0B0B;
   --bg-surface: #141414;
   --bg-card: #1A1A1A;
@@ -27,18 +29,20 @@ html[data-theme="dark"] {
 
 /* ── Light Theme (Warm Ivory Luxury) ── */
 html[data-theme="light"] {
+  --brand-gold: #92400e;
+  --brand-gold-hover: #78350f;
   --bg-page: #F9F6F0;
   --bg-surface: #FFFFFF;
   --bg-card: #FFFFFF;
   --bg-card-hover: #FAF5EE;
-  --border-subtle: rgba(0, 0, 0, 0.06);
-  --border-default: rgba(0, 0, 0, 0.1);
-  --border-gold: rgba(200, 130, 9, 0.2);
+  --border-subtle: rgba(0, 0, 0, 0.08);
+  --border-default: rgba(0, 0, 0, 0.14);
+  --border-gold: rgba(146, 64, 14, 0.25);
   --text-primary: #1A1A1A;
   --text-secondary: #52525B;
-  --text-muted: #A1A1AA;
-  --glass-bg: rgba(255, 255, 255, 0.85);
-  --glass-border: rgba(0, 0, 0, 0.08);
+  --text-muted: #71717A;
+  --glass-bg: rgba(255, 255, 255, 0.92);
+  --glass-border: rgba(0, 0, 0, 0.12);
 }
 
 html {

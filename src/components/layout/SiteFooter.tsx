@@ -16,12 +16,12 @@ export function SiteFooter() {
         backgroundColor: "var(--bg-surface)",
       }}
     >
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 sm:flex-row sm:justify-between">
+      <div className="mx-auto flex w-full max-w-7xl flex-col items-center gap-8 text-center sm:flex-row sm:justify-between sm:items-start sm:text-start md:text-start">
         <div className="space-y-3">
           <p className="text-sm font-semibold text-brand-gold">
             Ayadina Grills | مشويات أيادينا
           </p>
-          <div className="flex items-center gap-2 text-xs" style={{ color: "var(--text-muted)" }}>
+          <div className="flex items-center justify-center gap-2 text-xs sm:justify-start" style={{ color: "var(--text-muted)" }}>
             <Clock className="size-3.5" />
             <span>{t.common.openingHours}: {t.common.hoursValue}</span>
           </div>
@@ -30,8 +30,8 @@ export function SiteFooter() {
           </p>
         </div>
 
-        <div className="flex flex-col gap-3 sm:items-end">
-          <div className="flex flex-wrap gap-3 text-sm">
+        <div className="flex flex-col items-center gap-3 sm:items-end">
+          <div className="flex flex-wrap justify-center gap-3 text-sm sm:justify-end">
             {[
               { href: "/menu", label: t.nav.menu },
               { href: "/offers", label: t.nav.offers },
@@ -50,7 +50,7 @@ export function SiteFooter() {
           </div>
           <a
             href="tel:+966112345678"
-            className="flex items-center gap-1.5 text-xs transition-colors duration-300 hover:text-brand-gold"
+            className="flex items-center justify-center gap-1.5 text-xs transition-colors duration-300 hover:text-brand-gold sm:justify-start"
             style={{ color: "var(--text-muted)" }}
           >
             <Phone className="size-3" />

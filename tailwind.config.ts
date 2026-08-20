@@ -8,8 +8,8 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        "brand-gold": "#F3A712",
-        "brand-goldHover": "#D9910D",
+        "brand-gold": "var(--brand-gold, #f3a712)",
+        "brand-goldHover": "var(--brand-gold-hover, #d9910d)",
         "brand-dark": "#121212",
         "brand-card": "#1E1E1E",
         "brand-border": "#2A2A2A",
