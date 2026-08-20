@@ -44,8 +44,7 @@ export function HeroSection() {
           </Link>
           <Link
             href="/menu"
-            className="inline-flex min-h-12 items-center justify-center rounded-full border px-8 text-sm font-semibold text-white backdrop-blur-sm transition-all duration-300 ease-in-out hover:border-brand-gold hover:text-brand-gold sm:text-base"
-            style={{ borderColor: "var(--glass-border)", backgroundColor: "var(--glass-bg)" }}
+            className="inline-flex min-h-12 items-center justify-center rounded-full border border-zinc-200 bg-white px-8 text-sm font-semibold text-zinc-900 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-white dark:hover:bg-zinc-700 sm:text-base"
           >
             {t.buttons.viewMenu}
           </Link>
