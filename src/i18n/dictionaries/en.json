@@ -1,0 +1,279 @@
+{
+  "nav": {
+    "home": "Home",
+    "menu": "Menu",
+    "offers": "Offers",
+    "about": "About Us",
+    "contact": "Contact Us",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
+  },
+  "buttons": {
+    "orderNow": "Order Now",
+    "viewMenu": "View Menu",
+    "viewOffers": "View Offers",
+    "callNow": "Call Now",
+    "whatsapp": "WhatsApp",
+    "close": "Close",
+    "getDirections": "Get Directions"
+  },
+  "common": {
+    "openNow": "Open Now",
+    "closed": "Closed",
+    "openingHours": "Opening Hours",
+    "hoursValue": "Daily · 12:00 PM – 12:00 AM",
+    "calories": "Calories",
+    "kcal": "kcal",
+    "search": "Search",
+    "searchMenu": "Search dishes...",
+    "noResults": "No dishes match your search.",
+    "spicy": "Spicy",
+    "popular": "Popular",
+    "ingredients": "Ingredients",
+    "allergens": "Allergens",
+    "allergenWarning": "Please inform our staff of any allergies before ordering.",
+    "price": "SAR",
+    "validUntil": "Valid until",
+    "featured": "Featured",
+    "learnMore": "Learn More",
+    "phone": "Phone"
+  },
+  "home": {
+    "heroTitle": "Authentic Grills & Luxury Flavors",
+    "heroSubtitle": "Experience premium charcoal-grilled dishes, warm hospitality, and the rich taste of Ayadina Grills.",
+    "quickInfoTitle": "Visit Us Today",
+    "featuredTitle": "Featured Dishes",
+    "featuredSubtitle": "Our guests' most loved grills and specialties",
+    "announcementTitle": "Latest Offers",
+    "announcementCta": "Explore All Offers"
+  },
+  "menu": {
+    "pageTitle": "Our Menu",
+    "pageSubtitle": "Explore our signature grills, appetizers, pastries, and refreshing drinks.",
+    "categories": {
+      "all": "All",
+      "grills": "Grills",
+      "appetizers": "Appetizers",
+      "pastries": "Pastries",
+      "drinks": "Drinks"
+    }
+  },
+  "offers": {
+    "pageTitle": "Offers & Announcements",
+    "pageSubtitle": "Discover our latest promotions and hospitality packages."
+  },
+  "about": {
+    "pageTitle": "About Ayadina Grills",
+    "pageSubtitle": "A story of passion, quality, and authentic grill mastery.",
+    "storyTitle": "Our Story",
+    "storyBody": "Ayadina Grills was born from a love of authentic charcoal grilling and generous Arabian hospitality. For years, we have served families and guests with carefully selected meats, traditional recipes, and a warm atmosphere that feels like home. Every dish reflects our commitment to quality, freshness, and the timeless art of the grill.",
+    "valuesTitle": "Our Values",
+    "values": [
+      "Premium quality ingredients sourced with care",
+      "Authentic charcoal grilling techniques",
+      "Warm, family-friendly hospitality",
+      "Consistency in taste and service"
+    ],
+    "galleryTitle": "Restaurant Ambiance"
+  },
+  "contact": {
+    "pageTitle": "Contact Us",
+    "pageSubtitle": "We'd love to hear from you. Visit a branch or reach us instantly.",
+    "mapTitle": "Find Us on the Map",
+    "branchesTitle": "Our Branches",
+    "whatsappCta": "Chat on WhatsApp"
+  },
+  "language": {
+    "switchToArabic": "العربية",
+    "switchToEnglish": "English"
+  },
+  "dishes": {
+    "mixedGrill": {
+      "name": "Mixed Grill Platter",
+      "shortDescription": "Lamb chops, kebab, and chicken skewers.",
+      "description": "A signature platter of charcoal-grilled lamb chops, seasoned kebab, and tender chicken skewers served with grilled vegetables and our house sauce.",
+      "ingredients": ["Lamb", "Beef kebab", "Chicken breast", "Grilled vegetables", "House spice blend", "Garlic sauce"],
+      "allergens": ["Gluten", "Dairy"]
+    },
+    "lambChops": {
+      "name": "Charcoal Lamb Chops",
+      "shortDescription": "Premium lamb chops with herb marinade.",
+      "description": "Thick-cut lamb chops marinated in herbs and spices, grilled over charcoal for a smoky, juicy finish.",
+      "ingredients": ["Lamb chops", "Olive oil", "Garlic", "Fresh herbs", "Spices"],
+      "allergens": []
+    },
+    "chickenKebab": {
+      "name": "Chicken Kebab",
+      "shortDescription": "Tender chicken skewers with spices.",
+      "description": "Marinated chicken cubes grilled on skewers, served with tahini and fresh bread.",
+      "ingredients": ["Chicken breast", "Yogurt marinade", "Onion", "Spices", "Tahini"],
+      "allergens": ["Dairy", "Sesame"]
+    },
+    "kibbeh": {
+      "name": "Fried Kibbeh",
+      "shortDescription": "Crispy bulgur shells with spiced meat.",
+      "description": "Golden fried kibbeh with a savory minced meat and pine nut filling.",
+      "ingredients": ["Bulgur", "Minced lamb", "Pine nuts", "Onion", "Spices"],
+      "allergens": ["Gluten", "Nuts"]
+    },
+    "hummus": {
+      "name": "Classic Hummus",
+      "shortDescription": "Creamy chickpea dip with olive oil.",
+      "description": "Smooth hummus topped with olive oil and paprika, served with warm bread.",
+      "ingredients": ["Chickpeas", "Tahini", "Lemon", "Olive oil", "Garlic"],
+      "allergens": ["Sesame"]
+    },
+    "sambousek": {
+      "name": "Cheese Sambousek",
+      "shortDescription": "Crispy pastry filled with cheese.",
+      "description": "Hand-folded pastry pockets filled with melted cheese and herbs.",
+      "ingredients": ["Pastry dough", "Cheese blend", "Parsley", "Spices"],
+      "allergens": ["Gluten", "Dairy"]
+    },
+    "kunafa": {
+      "name": "Kunafa",
+      "shortDescription": "Warm shredded pastry with sweet syrup.",
+      "description": "Traditional kunafa with crispy kataifi threads and aromatic syrup.",
+      "ingredients": ["Kataifi pastry", "Sweet cheese", "Sugar syrup", "Pistachio", "Butter"],
+      "allergens": ["Gluten", "Dairy", "Nuts"]
+    },
+    "baklava": {
+      "name": "Mixed Baklava",
+      "shortDescription": "Assorted honey-soaked pastries.",
+      "description": "A selection of pistachio and walnut baklava layered with butter and honey syrup.",
+      "ingredients": ["Phyllo pastry", "Pistachio", "Walnut", "Butter", "Honey syrup"],
+      "allergens": ["Gluten", "Dairy", "Nuts"]
+    },
+    "lemonMint": {
+      "name": "Fresh Lemon Mint",
+      "shortDescription": "Refreshing citrus and mint cooler.",
+      "description": "Freshly squeezed lemon with mint leaves and a touch of sweetness.",
+      "ingredients": ["Fresh lemon", "Mint", "Water", "Sugar"],
+      "allergens": []
+    },
+    "arabicCoffee": {
+      "name": "Arabic Coffee",
+      "shortDescription": "Traditional lightly spiced coffee.",
+      "description": "Authentic Arabic coffee served with dates, lightly spiced with cardamom.",
+      "ingredients": ["Arabic coffee beans", "Cardamom", "Water"],
+      "allergens": []
+    },
+    "spicyWings": {
+      "name": "Spicy Grilled Wings",
+      "shortDescription": "Fire-grilled wings with chili glaze.",
+      "description": "Charcoal-grilled chicken wings tossed in our signature spicy chili glaze.",
+      "ingredients": ["Chicken wings", "Chili paste", "Garlic", "Spices", "Lemon"],
+      "allergens": []
+    },
+    "grilledVegetables": {
+      "name": "Grilled Vegetable Plate",
+      "shortDescription": "Seasonal vegetables from the grill.",
+      "description": "A colorful plate of seasonal vegetables grilled with olive oil and herbs.",
+      "ingredients": ["Zucchini", "Bell pepper", "Eggplant", "Olive oil", "Herbs"],
+      "allergens": []
+    }
+  },
+  "offersList": {
+    "hospitalityPackage": {
+      "title": "Complete Hospitality Package",
+      "description": "A full feast for gatherings — mixed grills, appetizers, pastries, and drinks for 10–15 guests.",
+      "validPeriod": "Valid through December 2026"
+    },
+    "familyFeast": {
+      "title": "Family Feast Deal",
+      "description": "Mixed grill platter, hummus, sambousek, and two large drinks at a special price.",
+      "validPeriod": "Weekdays only · Until end of month"
+    },
+    "weekendSpecial": {
+      "title": "Weekend Grill Special",
+      "description": "20% off selected grill platters every Thursday to Saturday after 6 PM.",
+      "validPeriod": "Every weekend"
+    }
+  },
+  "branches": {
+    "maali": {
+      "name": "Al-Ma'ali Branch",
+      "address": "Al-Ma'ali District, Riyadh"
+    },
+    "naseem": {
+      "name": "Al-Naseem Branch",
+      "address": "Al-Naseem District, Riyadh"
+    }
+  },
+  "announcements": {
+    "teaserTitle": "Complete Hospitality Package — Now Available",
+    "teaserDescription": "Host your gathering with our premium mixed grills, appetizers, and desserts package."
+  },
+  "admin": {
+    "loginTitle": "Admin Portal",
+    "loginSubtitle": "Sign in to manage menu, offers, and announcements.",
+    "username": "Username",
+    "password": "Password",
+    "loginButton": "Sign In",
+    "invalidCredentials": "Invalid username or password.",
+    "dashboardTitle": "Dashboard",
+    "menuManagement": "Menu Management",
+    "offersManagement": "Offers & Announcements",
+    "logout": "Logout",
+    "categories": "Categories",
+    "dishes": "Dishes",
+    "addCategory": "Add Category",
+    "editCategory": "Edit Category",
+    "deleteCategory": "Delete Category",
+    "addDish": "Add Dish",
+    "editDish": "Edit Dish",
+    "deleteDish": "Delete Dish",
+    "categoryNameAr": "Category Name (Arabic)",
+    "categoryNameEn": "Category Name (English)",
+    "dishNameAr": "Dish Name (Arabic)",
+    "dishNameEn": "Dish Name (English)",
+    "shortDescriptionAr": "Short Description (Arabic)",
+    "shortDescriptionEn": "Short Description (English)",
+    "descriptionAr": "Full Description (Arabic)",
+    "descriptionEn": "Full Description (English)",
+    "ingredientsAr": "Ingredients (Arabic, comma-separated)",
+    "ingredientsEn": "Ingredients (English, comma-separated)",
+    "allergensAr": "Allergens (Arabic, comma-separated)",
+    "allergensEn": "Allergens (English, comma-separated)",
+    "selectCategory": "Category",
+    "imageUrl": "Image URL",
+    "price": "Price (SAR)",
+    "calories": "Calories",
+    "badges": "Badges",
+    "featured": "Featured on Home",
+    "available": "Available on Menu",
+    "hidden": "Hidden",
+    "visible": "Visible",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirmDelete": "Are you sure you want to delete this item?",
+    "actions": "Actions",
+    "addOffer": "Add Offer",
+    "editOffer": "Edit Offer",
+    "deleteOffer": "Delete Offer",
+    "offerTitleAr": "Title (Arabic)",
+    "offerTitleEn": "Title (English)",
+    "offerDescriptionAr": "Description (Arabic)",
+    "offerDescriptionEn": "Description (English)",
+    "validPeriodAr": "Valid Period (Arabic)",
+    "validPeriodEn": "Valid Period (English)",
+    "active": "Active",
+    "inactive": "Inactive",
+    "showOnHome": "Show on Home Banner",
+    "noCategories": "No categories yet.",
+    "noDishes": "No dishes yet.",
+    "noOffers": "No offers yet.",
+    "backToSite": "Back to Website",
+    "allCategories": "All Categories",
+    "commaSeparated": "Separate items with commas",
+    "uploadImage": "Dish / Offer Image",
+    "dragDropHint": "Drag & drop an image here, or click to browse",
+    "browseFiles": "Browse Files",
+    "changeImage": "Tap to change image",
+    "optionalImageUrl": "Optional: paste URL or auto-filled from upload",
+    "uploadPreview": "Image preview",
+    "uploadInvalidType": "Please select a valid image file.",
+    "uploadTooLarge": "Image must be smaller than 3 MB.",
+    "uploadFailed": "Failed to read the image. Please try again."
+  }
+}
