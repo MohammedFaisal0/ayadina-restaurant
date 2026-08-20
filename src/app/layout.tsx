@@ -23,6 +23,9 @@ export const metadata: Metadata = {
   title: "Ayadina Grills | مشويات أيادينا",
   description:
     "Ayadina Grills — premium grilled dishes and an authentic luxury dining experience.",
+  icons: {
+    icon: "/logo.png",
+  },
 };
 
 export default function RootLayout({

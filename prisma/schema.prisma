@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  admin
+  editor
+  viewer
+}
+
+// ─── Users (Admin authentication) ────────────────────────────
+model User {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique @db.VarChar(64)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  role         UserRole @default(admin)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+// ─── Categories ──────────────────────────────────────────────
+model Category {
+  id           Int      @id @default(autoincrement())
+  nameAr       String   @map("name_ar") @db.VarChar(128)
+  nameEn       String   @map("name_en") @db.VarChar(128)
+  displayOrder Int      @default(0) @map("display_order") @db.SmallInt()
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  dishes Dish[]
+
+  @@index([displayOrder])
+  @@map("categories")
+}
+
+// ─── Dishes ──────────────────────────────────────────────────
+model Dish {
+  id            Int      @id @default(autoincrement())
+  categoryId    Int      @map("category_id")
+  nameAr        String   @map("name_ar") @db.VarChar(255)
+  nameEn        String   @map("name_en") @db.VarChar(255)
+  shortDescAr   String   @default("") @map("short_desc_ar") @db.VarChar(512)
+  shortDescEn   String   @default("") @map("short_desc_en") @db.VarChar(512)
+  descriptionAr String   @map("description_ar") @db.Text()
+  descriptionEn String   @map("description_en") @db.Text()
+  price         Decimal  @default(0) @db.Decimal(10, 2)
+  calories      Int      @default(0) @db.SmallInt()
+  imageUrl      String   @default("") @map("image_url") @db.VarChar(2048)
+  available     Boolean  @default(true)
+  featured      Boolean  @default(false)
+  badges        String   @default("") @db.VarChar(64)
+  ingredientsAr Json     @map("ingredients_ar")
+  ingredientsEn Json     @map("ingredients_en")
+  allergensAr   Json     @default("[]") @map("allergens_ar")
+  allergensEn   Json     @default("[]") @map("allergens_en")
+  displayOrder  Int      @default(0) @map("display_order") @db.SmallInt()
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([categoryId])
+  @@index([displayOrder])
+  @@map("dishes")
+}
+
+// ─── Offers ──────────────────────────────────────────────────
+model Offer {
+  id             Int      @id @default(autoincrement())
+  titleAr        String   @map("title_ar") @db.VarChar(255)
+  titleEn        String   @map("title_en") @db.VarChar(255)
+  descriptionAr  String   @map("description_ar") @db.Text()
+  descriptionEn  String   @map("description_en") @db.Text()
+  validPeriodAr  String   @default("") @map("valid_period_ar") @db.VarChar(255)
+  validPeriodEn  String   @default("") @map("valid_period_en") @db.VarChar(255)
+  imageUrl       String   @default("") @map("image_url") @db.VarChar(2048)
+  active         Boolean  @default(true)
+  featuredOnHome Boolean  @default(false) @map("featured_on_home")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@map("offers")
+}
+
+// ─── Settings (Key-Value) ────────────────────────────────────
+model Setting {
+  key       String   @id @db.VarChar(128)
+  value     String   @db.Text()
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("settings")
+}

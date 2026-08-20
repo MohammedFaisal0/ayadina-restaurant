@@ -17,17 +17,24 @@ export function SiteFooter() {
       }}
     >
       <div className="mx-auto flex w-full max-w-7xl flex-col items-center gap-8 text-center sm:flex-row sm:justify-between sm:items-start sm:text-start md:text-start">
-        <div className="space-y-3">
-          <p className="text-sm font-semibold text-brand-gold">
-            Ayadina Grills | مشويات أيادينا
-          </p>
-          <div className="flex items-center justify-center gap-2 text-xs sm:justify-start" style={{ color: "var(--text-muted)" }}>
-            <Clock className="size-3.5" />
-            <span>{t.common.openingHours}: {t.common.hoursValue}</span>
+        <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-x-5 sm:text-start">
+          <img
+            src="/logo.png"
+            alt="Ayadina Grills"
+            className="h-14 w-14 shrink-0 rounded-full object-contain drop-shadow-[0_0_10px_rgba(217,119,6,0.3)] md:h-16 md:w-16"
+          />
+          <div className="space-y-1.5">
+            <p className="text-sm font-semibold text-brand-gold">
+              Ayadina Grills | مشويات أيادينا
+            </p>
+            <div className="flex items-center justify-center gap-2 text-xs sm:justify-start" style={{ color: "var(--text-muted)" }}>
+              <Clock className="size-3.5" />
+              <span>{t.common.openingHours}: {t.common.hoursValue}</span>
+            </div>
+            <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+              © {year} Ayadina Grills. All rights reserved.
+            </p>
           </div>
-          <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-            © {year} Ayadina Grills. All rights reserved.
-          </p>
         </div>
 
         <div className="flex flex-col items-center gap-3 sm:items-end">

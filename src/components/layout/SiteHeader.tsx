@@ -43,13 +43,22 @@ export function SiteHeader() {
             href="/"
             className="min-w-0 text-sm font-semibold transition-colors hover:text-brand-gold sm:text-base"
           >
-            <span className="block truncate text-brand-gold">Ayadina Grills</span>
-            <span
-              className="block truncate text-xs sm:text-sm"
-              style={{ color: "var(--text-muted)" }}
-            >
-              مشويات أيادينا
-            </span>
+            <div className="flex items-center gap-2.5">
+              <img
+                src="/logo.png"
+                alt="Ayadina Grills"
+                className="h-9 w-9 shrink-0 rounded-full object-contain drop-shadow-[0_0_10px_rgba(217,119,6,0.3)] sm:h-11 sm:w-11"
+              />
+              <div className="min-w-0">
+                <span className="block truncate text-brand-gold">Ayadina Grills</span>
+                <span
+                  className="block truncate text-xs sm:text-sm"
+                  style={{ color: "var(--text-muted)" }}
+                >
+                  مشويات أيادينا
+                </span>
+              </div>
+            </div>
           </Link>
 
           <nav
@@ -141,7 +150,14 @@ export function SiteHeader() {
             className="flex items-center justify-between border-b px-4 py-4"
             style={{ borderColor: "var(--border-subtle)" }}
           >
-            <p className="text-sm font-semibold text-brand-gold">Ayadina Grills</p>
+            <div className="flex items-center gap-2">
+              <img
+                src="/logo.png"
+                alt="Ayadina Grills"
+                className="h-8 w-8 shrink-0 rounded-full object-contain drop-shadow-[0_0_10px_rgba(217,119,6,0.3)]"
+              />
+              <p className="text-sm font-semibold text-brand-gold">Ayadina Grills</p>
+            </div>
             <button
               type="button"
               className="inline-flex size-10 items-center justify-center rounded-full transition-colors"
