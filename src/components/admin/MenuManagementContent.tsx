@@ -42,7 +42,7 @@ type CategoryModalProps = {
   open: boolean;
   category: Category | null;
   onClose: () => void;
-  onSave: (data: CategoryFormData) => void;
+  onSave: (data: CategoryFormData) => Promise<void>;
 };
 
 function CategoryModal({ open, category, onClose, onSave }: CategoryModalProps) {
@@ -53,9 +53,9 @@ function CategoryModal({ open, category, onClose, onSave }: CategoryModalProps) 
     if (open) setNameAr(category?.name.ar ?? "");
   }, [open, category]);
 
-  const handleSubmit = (event: FormEvent) => {
+  const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    onSave({ name: buildBilingualText(nameAr, category?.name.en) });
+    await onSave({ name: buildBilingualText(nameAr, category?.name.en) });
     onClose();
   };
 
@@ -94,7 +94,7 @@ type DishFormModalProps = {
   dish: Dish | null;
   categories: Category[];
   onClose: () => void;
-  onSave: (data: DishFormData) => void;
+  onSave: (data: DishFormData) => Promise<void>;
 };
 
 function DishFormModal({ open, dish, categories, onClose, onSave }: DishFormModalProps) {
@@ -112,11 +112,11 @@ function DishFormModal({ open, dish, categories, onClose, onSave }: DishFormModa
     }
   }, [open, dish, categories]);
 
-  const handleSubmit = (event: FormEvent) => {
+  const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     const arIngredients = parseList(ingredientsAr);
     const arAllergens = parseList(allergensAr);
-    onSave({
+    await onSave({
       ...form,
       name: buildBilingualText(form.name.ar, dish?.name.en),
       shortDescription: buildBilingualText(form.shortDescription.ar, dish?.shortDescription.en),
@@ -329,6 +329,23 @@ export function MenuManagementContent() {
 
   const [categoryModal, setCategoryModal] = useState<Category | null | "new">(null);
   const [dishModal, setDishModal] = useState<Dish | null | "new">(null);
+  const [saving, setSaving] = useState(false);
+
+  const handleCategorySave = async (data: CategoryFormData) => {
+    setSaving(true);
+    try {
+      if (categoryModal === "new") { await addCategory(data); return; }
+      if (categoryModal) await updateCategory(categoryModal.id, data);
+    } finally { setSaving(false); }
+  };
+
+  const handleDishSave = async (data: DishFormData) => {
+    setSaving(true);
+    try {
+      if (dishModal === "new") { await addDish(data); return; }
+      if (dishModal) await updateDish(dishModal.id, data);
+    } finally { setSaving(false); }
+  };
 
   return (
     <div className="space-y-8 p-4 sm:p-6 lg:p-8">
@@ -472,10 +489,7 @@ export function MenuManagementContent() {
         open={categoryModal !== null}
         category={categoryModal === "new" ? null : categoryModal}
         onClose={() => setCategoryModal(null)}
-        onSave={(data) => {
-          if (categoryModal === "new") { addCategory(data); return; }
-          if (categoryModal) updateCategory(categoryModal.id, data);
-        }}
+        onSave={handleCategorySave}
       />
 
       <DishFormModal
@@ -483,10 +497,7 @@ export function MenuManagementContent() {
         dish={dishModal === "new" ? null : dishModal}
         categories={categories}
         onClose={() => setDishModal(null)}
-        onSave={(data) => {
-          if (dishModal === "new") { addDish(data); return; }
-          if (dishModal) updateDish(dishModal.id, data);
-        }}
+        onSave={handleDishSave}
       />
     </div>
   );

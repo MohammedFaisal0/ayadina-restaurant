@@ -5,63 +5,62 @@ import {
   useCallback,
   useContext,
   useMemo,
-  useSyncExternalStore,
+  useState,
+  useEffect,
 } from "react";
 import {
   AUTH_CHANGE_EVENT,
   AUTH_STORAGE_KEY,
   emitAuthChange,
 } from "@/lib/storage";
-
-export const ADMIN_USERNAME = "admin";
-export const ADMIN_PASSWORD = "ayadina2026";
-export const ADMIN_TOKEN = "ayadina-mock-admin-session";
+import { loginApi, getAuthToken } from "@/lib/api";
 
 type AuthContextValue = {
   isAuthenticated: boolean;
   isHydrated: boolean;
-  login: (username: string, password: string) => boolean;
+  login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
+  loginError: string | null;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-function subscribeAuth(onStoreChange: () => void) {
-  window.addEventListener(AUTH_CHANGE_EVENT, onStoreChange);
-  window.addEventListener("storage", onStoreChange);
-
-  return () => {
-    window.removeEventListener(AUTH_CHANGE_EVENT, onStoreChange);
-    window.removeEventListener("storage", onStoreChange);
-  };
-}
-
-function getAuthSnapshot() {
-  return localStorage.getItem(AUTH_STORAGE_KEY) === ADMIN_TOKEN;
-}
-
-function getAuthServerSnapshot() {
-  return false;
-}
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const isAuthenticated = useSyncExternalStore(
-    subscribeAuth,
-    getAuthSnapshot,
-    getAuthServerSnapshot,
-  );
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
 
-  const login = useCallback((username: string, password: string) => {
-    const isValid =
-      username.trim() === ADMIN_USERNAME && password === ADMIN_PASSWORD;
+  useEffect(() => {
+    const token = getAuthToken();
+    setIsAuthenticated(!!token);
+    setIsHydrated(true);
+  }, []);
 
-    if (!isValid) {
+  useEffect(() => {
+    function handleStorageChange() {
+      const token = getAuthToken();
+      setIsAuthenticated(!!token);
+    }
+    window.addEventListener(AUTH_CHANGE_EVENT, handleStorageChange);
+    window.addEventListener("storage", handleStorageChange);
+    return () => {
+      window.removeEventListener(AUTH_CHANGE_EVENT, handleStorageChange);
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
+
+  const login = useCallback(async (username: string, password: string) => {
+    setLoginError(null);
+    try {
+      const session = await loginApi(username, password);
+      localStorage.setItem(AUTH_STORAGE_KEY, session.token);
+      emitAuthChange();
+      return true;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Login failed";
+      setLoginError(message);
       return false;
     }
-
-    localStorage.setItem(AUTH_STORAGE_KEY, ADMIN_TOKEN);
-    emitAuthChange();
-    return true;
   }, []);
 
   const logout = useCallback(() => {
@@ -70,13 +69,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = useMemo<AuthContextValue>(
-    () => ({
-      isAuthenticated,
-      isHydrated: true,
-      login,
-      logout,
-    }),
-    [isAuthenticated, login, logout],
+    () => ({ isAuthenticated, isHydrated, login, logout, loginError }),
+    [isAuthenticated, isHydrated, login, logout, loginError],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -84,10 +78,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
   return context;
 }

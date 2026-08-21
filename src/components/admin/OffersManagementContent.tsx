@@ -25,7 +25,7 @@ type OfferModalProps = {
   open: boolean;
   offer: Offer | null;
   onClose: () => void;
-  onSave: (data: OfferFormData) => void;
+  onSave: (data: OfferFormData) => Promise<void>;
 };
 
 function OfferFormModal({ open, offer, onClose, onSave }: OfferModalProps) {
@@ -36,9 +36,9 @@ function OfferFormModal({ open, offer, onClose, onSave }: OfferModalProps) {
     if (open) setForm(offer ?? emptyOfferForm());
   }, [open, offer]);
 
-  const handleSubmit = (event: FormEvent) => {
+  const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    onSave({
+    await onSave({
       ...form,
       title: buildBilingualText(form.title.ar, offer?.title.en),
       description: buildBilingualText(form.description.ar, offer?.description.en),
@@ -150,6 +150,15 @@ export function OffersManagementContent() {
     toggleOfferActive, toggleOfferFeaturedOnHome,
   } = useData();
   const [offerModal, setOfferModal] = useState<Offer | null | "new">(null);
+  const [saving, setSaving] = useState(false);
+
+  const handleOfferSave = async (data: OfferFormData) => {
+    setSaving(true);
+    try {
+      if (offerModal === "new") { await addOffer(data); return; }
+      if (offerModal) await updateOffer(offerModal.id, data);
+    } finally { setSaving(false); }
+  };
 
   return (
     <div className="space-y-6 p-4 sm:p-6 lg:p-8">
@@ -246,10 +255,7 @@ export function OffersManagementContent() {
         open={offerModal !== null}
         offer={offerModal === "new" ? null : offerModal}
         onClose={() => setOfferModal(null)}
-        onSave={(data) => {
-          if (offerModal === "new") { addOffer(data); return; }
-          if (offerModal) updateOffer(offerModal.id, data);
-        }}
+        onSave={handleOfferSave}
       />
     </div>
   );

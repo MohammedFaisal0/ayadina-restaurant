@@ -18,10 +18,10 @@ export function AdminLoginForm() {
     if (isAuthenticated) router.replace("/admin/dashboard");
   }, [isAuthenticated, router]);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
-    const success = login(username, password);
+    const success = await login(username, password);
     if (success) {
       router.push("/admin/dashboard");
       return;
