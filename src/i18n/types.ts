@@ -181,5 +181,6 @@ export type Dictionary = {
     uploadInvalidType: string;
     uploadTooLarge: string;
     uploadFailed: string;
+    uploading: string;
   };
 };

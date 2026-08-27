@@ -274,6 +274,7 @@
     "uploadPreview": "Image preview",
     "uploadInvalidType": "Please select a valid image file.",
     "uploadTooLarge": "Image must be smaller than 3 MB.",
-    "uploadFailed": "Failed to read the image. Please try again."
+    "uploadFailed": "Could not upload the image. Please try again.",
+    "uploading": "Uploading..."
   }
 }
