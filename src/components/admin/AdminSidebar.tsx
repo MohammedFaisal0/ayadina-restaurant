@@ -7,10 +7,11 @@ import { useAuth } from "@/context/AuthContext";
 import { useLocale } from "@/i18n/locale-context";
 import { useTheme } from "@/context/ThemeContext";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { routes } from "@/lib/paths";
 
 const adminLinks = [
-  { href: "/admin/dashboard/menu", key: "menuManagement" as const, icon: LayoutDashboard },
-  { href: "/admin/dashboard/offers", key: "offersManagement" as const, icon: Tag },
+  { href: routes.adminMenu, key: "menuManagement" as const, icon: LayoutDashboard },
+  { href: routes.adminOffers, key: "offersManagement" as const, icon: Tag },
 ];
 
 export function AdminSidebar() {

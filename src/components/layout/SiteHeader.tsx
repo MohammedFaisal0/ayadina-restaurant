@@ -7,13 +7,14 @@ import { Menu, X, Sun, Moon } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useLocale } from "@/i18n/locale-context";
 import { useTheme } from "@/context/ThemeContext";
+import { routes } from "@/lib/paths";
 
 const navLinks = [
-  { href: "/", key: "home" as const },
-  { href: "/menu", key: "menu" as const },
-  { href: "/offers", key: "offers" as const },
-  { href: "/about", key: "about" as const },
-  { href: "/contact", key: "contact" as const },
+  { href: routes.home, key: "home" as const },
+  { href: routes.menu, key: "menu" as const },
+  { href: routes.offers, key: "offers" as const },
+  { href: routes.about, key: "about" as const },
+  { href: routes.contact, key: "contact" as const },
 ];
 
 export function SiteHeader() {

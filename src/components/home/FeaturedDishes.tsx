@@ -7,6 +7,7 @@ import { SmartImage } from "@/components/ui/SmartImage";
 import { useData } from "@/context/DataContext";
 import { useLocale } from "@/i18n/locale-context";
 import { getDishCopy } from "@/types/data";
+import { routes } from "@/lib/paths";
 
 export function FeaturedDishes() {
   const { t, locale, dir } = useLocale();
@@ -76,7 +77,7 @@ export function FeaturedDishes() {
 
         <div className="text-center">
           <Link
-            href="/menu"
+            href={routes.menu}
             className="inline-flex min-h-11 items-center gap-2 rounded-full border px-6 text-sm font-medium transition-all duration-300 ease-in-out hover:border-brand-gold hover:text-brand-gold"
             style={{
               borderColor: "var(--border-default)",

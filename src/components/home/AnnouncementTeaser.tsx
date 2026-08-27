@@ -8,6 +8,7 @@ import { useData } from "@/context/DataContext";
 import { useLocale } from "@/i18n/locale-context";
 import { getOfferCopy } from "@/types/data";
 import type { Offer } from "@/types/data";
+import { routes } from "@/lib/paths";
 
 const AUTOPLAY_MS = 5_000;
 
@@ -74,7 +75,7 @@ function StaticBanner({ offer }: { offer: Offer }) {
                 {copy.description}
               </p>
               <Link
-                href="/offers"
+                href={routes.offers}
                 className="inline-flex min-h-11 w-fit items-center justify-center rounded-full bg-brand-gold px-6 text-sm font-semibold text-brand-dark transition-all duration-300 ease-in-out hover:bg-brand-gold-hover hover:shadow-lg hover:shadow-brand-gold/20"
               >
                 {t.home.announcementCta}
@@ -195,7 +196,7 @@ function Carousel({ offers }: { offers: Offer[] }) {
                         {copy.description}
                       </p>
                       <Link
-                        href="/offers"
+                        href={routes.offers}
                         className="inline-flex min-h-11 w-fit items-center justify-center rounded-full bg-brand-gold px-6 text-sm font-semibold text-brand-dark transition-all duration-300 ease-in-out hover:bg-brand-gold-hover hover:shadow-lg hover:shadow-brand-gold/20"
                       >
                         {t.home.announcementCta}

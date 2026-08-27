@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Shield } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { routes } from "@/lib/paths";
 import { useLocale } from "@/i18n/locale-context";
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
@@ -13,7 +14,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      router.replace("/admin/login");
+      router.replace(routes.adminLogin);
     }
   }, [isAuthenticated, router]);
 

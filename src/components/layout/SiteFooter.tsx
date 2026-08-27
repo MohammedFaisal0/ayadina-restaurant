@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Clock, Phone } from "lucide-react";
 import { useLocale } from "@/i18n/locale-context";
+import { routes } from "@/lib/paths";
 
 export function SiteFooter() {
   const { t } = useLocale();
@@ -40,10 +41,10 @@ export function SiteFooter() {
         <div className="flex flex-col items-center gap-3 sm:items-end">
           <div className="flex flex-wrap justify-center gap-3 text-sm sm:justify-end">
             {[
-              { href: "/menu", label: t.nav.menu },
-              { href: "/offers", label: t.nav.offers },
-              { href: "/about", label: t.nav.about },
-              { href: "/contact", label: t.nav.contact },
+              { href: routes.menu, label: t.nav.menu },
+              { href: routes.offers, label: t.nav.offers },
+              { href: routes.about, label: t.nav.about },
+              { href: routes.contact, label: t.nav.contact },
             ].map(({ href, label }) => (
               <Link
                 key={href}

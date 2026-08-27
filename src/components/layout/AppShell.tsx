@@ -4,11 +4,12 @@ import { usePathname } from "next/navigation";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { useLocale } from "@/i18n/locale-context";
+import { isAdminPath } from "@/lib/paths";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { dir, locale } = useLocale();
-  const isAdminRoute = pathname.startsWith("/admin");
+  const isAdminRoute = isAdminPath(pathname);
 
   const shell = (
     <div

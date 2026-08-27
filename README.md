@@ -109,7 +109,7 @@ npm run dev
 
 افتح [http://localhost:3000](http://localhost:3000).
 
-لوحة الإدارة: [http://localhost:3000/admin/login](http://localhost:3000/admin/login).
+لوحة الإدارة: [http://localhost:3000/p/c8f0e1d4a7b69325e0c1d84a](http://localhost:3000/p/c8f0e1d4a7b69325e0c1d84a) (المسار القديم `/admin/login` يُحوَّل تلقائيًا).
 
 ---
 

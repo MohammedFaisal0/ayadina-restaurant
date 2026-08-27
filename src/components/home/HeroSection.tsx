@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Flame } from "lucide-react";
 import { useLocale } from "@/i18n/locale-context";
+import { routes } from "@/lib/paths";
 
 export function HeroSection() {
   const { t } = useLocale();
@@ -37,13 +38,13 @@ export function HeroSection() {
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:gap-4">
           <Link
-            href="/menu"
+            href={routes.menu}
             className="inline-flex min-h-12 items-center justify-center rounded-full bg-brand-gold px-8 text-sm font-semibold text-brand-dark transition-all duration-300 ease-in-out hover:bg-brand-gold-hover hover:shadow-lg hover:shadow-brand-gold/20 sm:text-base"
           >
             {t.buttons.orderNow}
           </Link>
           <Link
-            href="/menu"
+            href={routes.menu}
             className="inline-flex min-h-12 items-center justify-center rounded-full border border-zinc-200 bg-white px-8 text-sm font-semibold text-zinc-900 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-white dark:hover:bg-zinc-700 sm:text-base"
           >
             {t.buttons.viewMenu}

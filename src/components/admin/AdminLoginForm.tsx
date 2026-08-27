@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Lock, User, Flame } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useLocale } from "@/i18n/locale-context";
+import { routes } from "@/lib/paths";
 
 export function AdminLoginForm() {
   const { t } = useLocale();
@@ -15,7 +16,7 @@ export function AdminLoginForm() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (isAuthenticated) router.replace("/admin/dashboard");
+    if (isAuthenticated) router.replace(routes.adminDashboard);
   }, [isAuthenticated, router]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -23,7 +24,7 @@ export function AdminLoginForm() {
     setError("");
     const success = await login(username, password);
     if (success) {
-      router.push("/admin/dashboard");
+      router.push(routes.adminDashboard);
       return;
     }
     setError(t.admin.invalidCredentials);
