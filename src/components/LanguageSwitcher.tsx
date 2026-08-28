@@ -13,7 +13,8 @@ export function LanguageSwitcher() {
       type="button"
       onClick={toggleLocale}
       aria-label={label}
-      className="inline-flex min-h-10 min-w-10 items-center justify-center gap-1.5 rounded-full px-3 text-sm font-medium transition-all duration-300 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold"
+      title={label}
+      className="inline-flex size-10 items-center justify-center rounded-full transition-all duration-300 ease-in-out hover:text-brand-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold"
       style={{
         border: "1px solid var(--border-default)",
         backgroundColor: "var(--bg-card)",
@@ -21,7 +22,6 @@ export function LanguageSwitcher() {
       }}
     >
       <Globe className="size-4" />
-      <span className="hidden sm:inline">{label}</span>
     </button>
   );
 }

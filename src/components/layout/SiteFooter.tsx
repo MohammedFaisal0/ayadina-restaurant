@@ -6,8 +6,9 @@ import { useLocale } from "@/i18n/locale-context";
 import { routes } from "@/lib/paths";
 
 export function SiteFooter() {
-  const { t } = useLocale();
+  const { t, dir } = useLocale();
   const year = new Date().getFullYear();
+  const isRtl = dir === "rtl";
 
   return (
     <footer
@@ -17,8 +18,17 @@ export function SiteFooter() {
         backgroundColor: "var(--bg-surface)",
       }}
     >
-      <div className="mx-auto flex w-full max-w-7xl flex-col items-center gap-8 text-center sm:flex-row sm:justify-between sm:items-start sm:text-start md:text-start">
-        <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-x-5 sm:text-start">
+      <div
+        dir="ltr"
+        className={`mx-auto flex w-full max-w-7xl flex-col items-center gap-8 text-center md:items-start md:justify-between ${
+          isRtl ? "md:flex-row" : "md:flex-row-reverse"
+        }`}
+      >
+        <div
+          className={`flex flex-col items-center gap-4 ${
+            isRtl ? "md:flex-row md:items-start md:text-left" : "md:flex-row-reverse md:items-start md:text-right"
+          }`}
+        >
           <img
             src="/logo.png"
             alt="Ayadina Grills"
@@ -28,7 +38,12 @@ export function SiteFooter() {
             <p className="text-sm font-semibold text-brand-gold">
               Ayadina Grills | مشويات أيادينا
             </p>
-            <div className="flex items-center justify-center gap-2 text-xs sm:justify-start" style={{ color: "var(--text-muted)" }}>
+            <div
+              className={`flex items-center justify-center gap-2 text-xs ${
+                isRtl ? "md:justify-start" : "md:justify-end"
+              }`}
+              style={{ color: "var(--text-muted)" }}
+            >
               <Clock className="size-3.5" />
               <span>{t.common.openingHours}: {t.common.hoursValue}</span>
             </div>
@@ -38,14 +53,30 @@ export function SiteFooter() {
           </div>
         </div>
 
-        <div className="flex flex-col items-center gap-3 sm:items-end">
-          <div className="flex flex-wrap justify-center gap-3 text-sm sm:justify-end">
-            {[
-              { href: routes.menu, label: t.nav.menu },
-              { href: routes.offers, label: t.nav.offers },
-              { href: routes.about, label: t.nav.about },
-              { href: routes.contact, label: t.nav.contact },
-            ].map(({ href, label }) => (
+        <div
+          className={`flex flex-col items-center gap-3 ${
+            isRtl ? "md:items-end md:text-right" : "md:items-start md:text-left"
+          }`}
+        >
+          <div
+            className={`flex flex-wrap justify-center gap-3 text-sm ${
+              isRtl ? "md:justify-end" : "md:justify-start"
+            }`}
+          >
+            {(isRtl
+              ? [
+                  { href: routes.contact, label: t.nav.contact },
+                  { href: routes.about, label: t.nav.about },
+                  { href: routes.offers, label: t.nav.offers },
+                  { href: routes.menu, label: t.nav.menu },
+                ]
+              : [
+                  { href: routes.menu, label: t.nav.menu },
+                  { href: routes.offers, label: t.nav.offers },
+                  { href: routes.about, label: t.nav.about },
+                  { href: routes.contact, label: t.nav.contact },
+                ]
+            ).map(({ href, label }) => (
               <Link
                 key={href}
                 href={href}
@@ -58,7 +89,9 @@ export function SiteFooter() {
           </div>
           <a
             href="tel:+966112345678"
-            className="flex items-center justify-center gap-1.5 text-xs transition-colors duration-300 hover:text-brand-gold sm:justify-start"
+            className={`flex items-center justify-center gap-1.5 text-xs transition-colors duration-300 hover:text-brand-gold ${
+              isRtl ? "md:justify-end" : "md:justify-start"
+            }`}
             style={{ color: "var(--text-muted)" }}
           >
             <Phone className="size-3" />
