@@ -38,13 +38,17 @@ function OfferFormModal({ open, offer, onClose, onSave }: OfferModalProps) {
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    await onSave({
-      ...form,
-      title: buildBilingualText(form.title.ar, offer?.title.en),
-      description: buildBilingualText(form.description.ar, offer?.description.en),
-      validPeriod: buildBilingualText(form.validPeriod.ar, offer?.validPeriod.en),
-    });
-    onClose();
+    try {
+      await onSave({
+        ...form,
+        title: await buildBilingualText(form.title.ar, offer?.title.en, offer?.title.ar),
+        description: await buildBilingualText(form.description.ar, offer?.description.en, offer?.description.ar),
+        validPeriod: await buildBilingualText(form.validPeriod.ar, offer?.validPeriod.en, offer?.validPeriod.ar),
+      });
+      onClose();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (

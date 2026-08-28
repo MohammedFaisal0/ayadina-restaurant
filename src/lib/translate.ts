@@ -1,4 +1,5 @@
 import type { BilingualList, BilingualText } from "@/types/data";
+import { getAuthToken } from "@/lib/api";
 
 const DICTIONARY: Record<string, string> = {
   // ── Dishes ──
@@ -149,6 +150,60 @@ export function translateList(items: string[]): string[] {
   return items.map(translateWord);
 }
 
+export function containsArabic(text: string): boolean {
+  return /[\u0600-\u06FF]/.test(text);
+}
+
+function shouldKeepExistingEnglish(
+  ar: string,
+  existingEn?: string,
+  previousAr?: string,
+): boolean {
+  if (!existingEn?.trim()) return false;
+  if (containsArabic(existingEn)) return false;
+  if (previousAr === undefined) return false;
+  return previousAr.trim() === ar.trim();
+}
+
+async function remoteTranslateMany(texts: string[]): Promise<string[]> {
+  if (texts.length === 0) return [];
+
+  const token = getAuthToken();
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  const response = await fetch("/api/translate", {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ texts }),
+  });
+
+  const body = (await response.json().catch(() => null)) as { translations?: string[]; error?: string } | null;
+  if (!response.ok || !Array.isArray(body?.translations) || body.translations.length !== texts.length) {
+    throw new Error(body?.error || "Translation failed");
+  }
+
+  return body.translations;
+}
+
+async function resolveEnglish(
+  ar: string,
+  existingEn?: string,
+  previousAr?: string,
+): Promise<string> {
+  const trimmed = ar.trim();
+  if (!trimmed) return "";
+  if (shouldKeepExistingEnglish(trimmed, existingEn, previousAr)) {
+    return existingEn!.trim();
+  }
+
+  const local = DICTIONARY[trimmed] ?? translateText(trimmed);
+  if (local && !containsArabic(local)) return local;
+
+  const [remote] = await remoteTranslateMany([trimmed]);
+  return remote?.trim() || local || trimmed;
+}
+
 export function translateBilingual(ar: string, existingEn?: string): string {
   if (existingEn && existingEn.trim()) return existingEn;
   return translateText(ar);
@@ -164,16 +219,47 @@ export function translateBilingualList(
   return translateList(arItems);
 }
 
-export function buildBilingualText(
+export async function buildBilingualText(
   ar: string,
   existingEn?: string,
-): BilingualText {
-  return { ar, en: translateBilingual(ar, existingEn) };
+  previousAr?: string,
+): Promise<BilingualText> {
+  return { ar, en: await resolveEnglish(ar, existingEn, previousAr) };
 }
 
-export function buildBilingualList(
+export async function buildBilingualList(
   arItems: string[],
   existingEnItems?: string[],
-): BilingualList {
-  return { ar: arItems, en: translateBilingualList(arItems, existingEnItems) };
+  previousArItems?: string[],
+): Promise<BilingualList> {
+  const uniqueNeeded: string[] = [];
+  const planned = arItems.map((ar, index) => {
+    const existingEn = existingEnItems?.[index];
+    const previousAr = previousArItems?.[index];
+    if (!ar.trim()) return { type: "empty" as const };
+    if (shouldKeepExistingEnglish(ar, existingEn, previousAr)) {
+      return { type: "keep" as const, value: existingEn!.trim() };
+    }
+    const local = DICTIONARY[ar.trim()] ?? translateText(ar);
+    if (local && !containsArabic(local)) return { type: "local" as const, value: local };
+    uniqueNeeded.push(ar.trim());
+    return { type: "remote" as const, text: ar.trim() };
+  });
+
+  const remoteByText = new Map<string, string>();
+  const uniqueTexts = [...new Set(uniqueNeeded)];
+  if (uniqueTexts.length > 0) {
+    const translations = await remoteTranslateMany(uniqueTexts);
+    uniqueTexts.forEach((text, i) => {
+      remoteByText.set(text, translations[i]?.trim() || text);
+    });
+  }
+
+  const en = planned.map((item, index) => {
+    if (item.type === "empty") return "";
+    if (item.type === "keep" || item.type === "local") return item.value;
+    return remoteByText.get(item.text) ?? arItems[index];
+  });
+
+  return { ar: arItems, en };
 }

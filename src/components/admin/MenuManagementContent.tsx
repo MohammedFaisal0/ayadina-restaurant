@@ -10,8 +10,6 @@ import { useLocale } from "@/i18n/locale-context";
 import {
   buildBilingualList,
   buildBilingualText,
-  translateList,
-  translateText,
 } from "@/lib/translate";
 import type { Category, CategoryFormData, Dish, DishFormData } from "@/types/data";
 
@@ -55,7 +53,7 @@ function CategoryModal({ open, category, onClose, onSave }: CategoryModalProps) 
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    await onSave({ name: buildBilingualText(nameAr, category?.name.en) });
+    await onSave({ name: await buildBilingualText(nameAr, category?.name.en, category?.name.ar) });
     onClose();
   };
 
@@ -102,6 +100,7 @@ function DishFormModal({ open, dish, categories, onClose, onSave }: DishFormModa
   const [form, setForm] = useState<DishFormData>(dish ?? emptyDishForm(categories[0]?.id ?? ""));
   const [ingredientsAr, setIngredientsAr] = useState(dish?.ingredients.ar.join(", ") ?? "");
   const [allergensAr, setAllergensAr] = useState(dish?.allergens.ar.join(", ") ?? "");
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (open) {
@@ -109,6 +108,7 @@ function DishFormModal({ open, dish, categories, onClose, onSave }: DishFormModa
       setForm(next);
       setIngredientsAr(next.ingredients.ar.join(", "));
       setAllergensAr(next.allergens.ar.join(", "));
+      setError("");
     }
   }, [open, dish, categories]);
 
@@ -116,15 +116,24 @@ function DishFormModal({ open, dish, categories, onClose, onSave }: DishFormModa
     event.preventDefault();
     const arIngredients = parseList(ingredientsAr);
     const arAllergens = parseList(allergensAr);
-    await onSave({
-      ...form,
-      name: buildBilingualText(form.name.ar, dish?.name.en),
-      shortDescription: buildBilingualText(form.shortDescription.ar, dish?.shortDescription.en),
-      description: buildBilingualText(form.description.ar, dish?.description.en),
-      ingredients: buildBilingualList(arIngredients, dish?.ingredients.en),
-      allergens: buildBilingualList(arAllergens, dish?.allergens.en),
-    });
-    onClose();
+    setError("");
+    try {
+      await onSave({
+        ...form,
+        name: await buildBilingualText(form.name.ar, dish?.name.en, dish?.name.ar),
+        shortDescription: await buildBilingualText(
+          form.shortDescription.ar,
+          dish?.shortDescription.en,
+          dish?.shortDescription.ar,
+        ),
+        description: await buildBilingualText(form.description.ar, dish?.description.en, dish?.description.ar),
+        ingredients: await buildBilingualList(arIngredients, dish?.ingredients.en, dish?.ingredients.ar),
+        allergens: await buildBilingualList(arAllergens, dish?.allergens.en, dish?.allergens.ar),
+      });
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Translation failed");
+    }
   };
 
   const toggleBadge = (badge: "spicy" | "popular") => {
@@ -311,6 +320,8 @@ function DishFormModal({ open, dish, categories, onClose, onSave }: DishFormModa
             />
           </div>
         </div>
+
+        {error ? <p className="text-xs text-red-400">{error}</p> : null}
 
         <ModalActions onClose={onClose} saveLabel={t.admin.save} />
       </form>
