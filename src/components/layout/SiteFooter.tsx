@@ -16,6 +16,48 @@ const navItems = [
   { href: routes.contact, key: "contact" as const },
 ];
 
+function FooterNav({ className = "" }: { className?: string }) {
+  const { t } = useLocale();
+  return (
+    <nav
+      aria-label="Footer"
+      className={`flex flex-wrap justify-center gap-3 text-sm ${className}`}
+    >
+      {navItems.map(({ href, key }) => (
+        <Link
+          key={href}
+          href={href}
+          className="transition-colors duration-300 hover:text-brand-gold"
+          style={{ color: "var(--text-muted)" }}
+        >
+          {t.nav[key]}
+        </Link>
+      ))}
+    </nav>
+  );
+}
+
+function WorkingHours({
+  hours,
+  className = "",
+}: {
+  hours: string;
+  className?: string;
+}) {
+  const { t } = useLocale();
+  return (
+    <div
+      className={`flex items-center gap-2 text-xs ${className}`}
+      style={{ color: "var(--text-muted)" }}
+    >
+      <Clock className="size-3.5 shrink-0" />
+      <span>
+        {t.common.openingHours}: {hours}
+      </span>
+    </div>
+  );
+}
+
 export function SiteFooter() {
   const { t, dir, locale } = useLocale();
   const { siteSettings, branches } = useData();
@@ -31,13 +73,16 @@ export function SiteFooter() {
     locale,
     "All rights reserved",
   );
+  const copyrightLine = `© ${year} ${brandEn}. ${copyright}`;
 
   const mainBranch =
     branches.find((b) => b.isMainBranch && b.phone.trim()) ??
     branches.find((b) => b.phone.trim());
   const branchPhone = mainBranch?.phone.trim() ?? "";
 
-  // dir={dir}: first column = start (RTL right / LTR left), second = end (opposite).
+  const logoClass =
+    "shrink-0 rounded-full object-contain drop-shadow-[0_0_10px_rgba(217,119,6,0.3)]";
+
   return (
     <footer
       className="border-t px-4 py-8 sm:px-6 lg:px-8"
@@ -46,52 +91,42 @@ export function SiteFooter() {
         backgroundColor: "var(--bg-surface)",
       }}
     >
-      <div
-        dir={dir}
-        className="mx-auto flex w-full max-w-7xl flex-col items-center gap-8 md:flex-row md:items-start md:justify-between"
-      >
-        {/* Logo + hours + copyright — start side; text mirrors beside logo via dir */}
-        <div className="flex items-center gap-3 text-start sm:gap-4">
+      <div dir={dir} className="mx-auto w-full max-w-7xl">
+        {/* ── Mobile: stacked centered column ── */}
+        <div className="flex flex-col items-center gap-4 text-center text-sm sm:hidden">
           <img
             src={logoUrl}
             alt={brandLabel}
-            className="h-14 w-14 shrink-0 rounded-full object-contain drop-shadow-[0_0_10px_rgba(217,119,6,0.3)] md:h-16 md:w-16"
+            className={`h-14 w-14 ${logoClass}`}
           />
-          <div className="min-w-0 space-y-1.5">
-            <div
-              className="flex items-center gap-2 text-xs"
-              style={{ color: "var(--text-muted)" }}
-            >
-              <Clock className="size-3.5 shrink-0" />
-              <span>
-                {t.common.openingHours}: {hours}
-              </span>
-            </div>
-            <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-              © {year} {brandEn}. {copyright}
-            </p>
-          </div>
+          <WorkingHours hours={hours} className="justify-center" />
+          <FooterNav />
+          <SocialIconRow branchPhone={branchPhone} />
+          <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+            {copyrightLine}
+          </p>
         </div>
 
-        {/* Quick links + social icons centered beneath — end side */}
-        <div className="flex w-full max-w-md flex-col items-center gap-3 md:w-auto">
-          <nav
-            aria-label="Footer"
-            className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-sm"
-          >
-            {navItems.map(({ href, key }) => (
-              <Link
-                key={href}
-                href={href}
-                className="transition-colors duration-300 hover:text-brand-gold"
-                style={{ color: "var(--text-muted)" }}
-              >
-                {t.nav[key]}
-              </Link>
-            ))}
-          </nav>
+        {/* ── Desktop: brand start / links end ── */}
+        <div className="hidden items-start justify-between gap-8 sm:flex">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <img
+              src={logoUrl}
+              alt={brandLabel}
+              className={`h-16 w-16 ${logoClass}`}
+            />
+            <div className="min-w-0 space-y-1.5 text-start">
+              <WorkingHours hours={hours} />
+              <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                {copyrightLine}
+              </p>
+            </div>
+          </div>
 
-          <SocialIconRow branchPhone={branchPhone} />
+          <div className="flex flex-col items-center gap-3">
+            <FooterNav className="gap-x-4" />
+            <SocialIconRow branchPhone={branchPhone} />
+          </div>
         </div>
       </div>
     </footer>
