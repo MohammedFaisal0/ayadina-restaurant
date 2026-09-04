@@ -1,9 +1,10 @@
 "use client";
 
-import { Mail } from "lucide-react";
+import { Mail, Phone } from "lucide-react";
 import type { LucideProps } from "lucide-react";
 import { useData } from "@/context/DataContext";
 import { useLocale } from "@/i18n/locale-context";
+import { toTelHref, toWhatsAppHref } from "@/lib/phone";
 
 /**
  * This project's lucide-react build no longer ships brand marks, so Instagram,
@@ -84,12 +85,37 @@ function toAbsoluteUrl(value: string) {
   return `https://${trimmed.replace(/^\/+/, "")}`;
 }
 
-/** Email + social channels from site settings (phone/WhatsApp are per-branch). */
-export function useSocialChannels(): SocialChannel[] {
+type SocialChannelsOptions = {
+  /** When set, adds compact Phone + WhatsApp icons for this branch number. */
+  branchPhone?: string;
+};
+
+/** Contact + social channels available for icon rows / labelled lists. */
+export function useSocialChannels(options: SocialChannelsOptions = {}): SocialChannel[] {
   const { siteSettings } = useData();
   const { t } = useLocale();
+  const branchPhone = options.branchPhone?.trim() ?? "";
 
   const channels: SocialChannel[] = [];
+
+  if (branchPhone) {
+    channels.push({
+      id: "phone",
+      href: toTelHref(branchPhone),
+      label: t.common.phone,
+      value: branchPhone,
+      Icon: (props) => <Phone {...(props as LucideProps)} />,
+      ltr: true,
+    });
+    channels.push({
+      id: "whatsapp",
+      href: toWhatsAppHref(branchPhone),
+      label: t.buttons.whatsapp,
+      value: branchPhone,
+      Icon: WhatsappIcon,
+      ltr: true,
+    });
+  }
 
   if (siteSettings.contactEmail.trim()) {
     channels.push({
@@ -142,19 +168,21 @@ function isExternal(channel: SocialChannel) {
   return channel.href.startsWith("http");
 }
 
-/** Compact icon-only row, used in the footer. */
+/** Compact icon-only row (footer / overlays) — no labels or large chips. */
 export function SocialIconRow({
   omit = [],
+  branchPhone,
   className = "",
 }: {
   omit?: SocialChannelId[];
+  branchPhone?: string;
   className?: string;
 }) {
-  const channels = useSocialChannels().filter((c) => !omit.includes(c.id));
+  const channels = useSocialChannels({ branchPhone }).filter((c) => !omit.includes(c.id));
   if (channels.length === 0) return null;
 
   return (
-    <div className={`flex flex-wrap items-center gap-2 ${className}`}>
+    <div className={`flex flex-wrap items-center justify-center gap-1 ${className}`}>
       {channels.map((channel) => (
         <a
           key={channel.id}
@@ -163,8 +191,8 @@ export function SocialIconRow({
           rel={isExternal(channel) ? "noopener noreferrer" : undefined}
           aria-label={channel.label}
           title={channel.label}
-          className="inline-flex size-9 items-center justify-center rounded-full transition-colors duration-300 hover:border-brand-gold hover:text-brand-gold"
-          style={{ border: "1px solid var(--border-default)", color: "var(--text-muted)" }}
+          className="inline-flex size-8 items-center justify-center rounded-md transition-colors duration-200 hover:text-brand-gold"
+          style={{ color: "var(--text-muted)" }}
         >
           <channel.Icon className="size-4" />
         </a>
@@ -174,8 +202,14 @@ export function SocialIconRow({
 }
 
 /** Labelled rows with the underlying number/address, used on the contact page. */
-export function SocialChannelList({ omit = [] }: { omit?: SocialChannelId[] }) {
-  const channels = useSocialChannels().filter((c) => !omit.includes(c.id));
+export function SocialChannelList({
+  omit = [],
+  branchPhone,
+}: {
+  omit?: SocialChannelId[];
+  branchPhone?: string;
+}) {
+  const channels = useSocialChannels({ branchPhone }).filter((c) => !omit.includes(c.id));
   if (channels.length === 0) return null;
 
   return (
