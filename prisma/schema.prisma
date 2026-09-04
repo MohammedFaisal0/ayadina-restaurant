@@ -13,14 +13,60 @@ enum UserRole {
   viewer
 }
 
+// ─── Restaurants (multi-tenant root; dishes/categories require restaurant_id) ─
+model Restaurant {
+  id             String   @id @default(cuid()) @db.VarChar(191)
+  slug           String   @unique @db.VarChar(64)
+  nameAr         String   @map("name_ar") @db.VarChar(255)
+  nameEn         String   @map("name_en") @db.VarChar(255)
+  logoUrl        String?  @map("logo_url") @db.VarChar(2048)
+  bannerUrl      String?  @map("banner_url") @db.VarChar(2048)
+  isActive       Boolean  @default(true) @map("is_active")
+  themeConfig    Json?    @map("theme_config")
+  phone          String?  @db.VarChar(32)
+  whatsapp       String?  @db.VarChar(32)
+  openingHours   String?  @map("opening_hours") @db.VarChar(255)
+  locationAr     String?  @map("location_ar") @db.VarChar(512)
+  locationEn     String?  @map("location_en") @db.VarChar(512)
+  aboutStoryAr   String   @default("") @map("about_story_ar") @db.Text()
+  aboutStoryEn   String   @default("") @map("about_story_en") @db.Text()
+  aboutVisionAr  String   @default("") @map("about_vision_ar") @db.Text()
+  aboutVisionEn  String   @default("") @map("about_vision_en") @db.Text()
+  aboutValuesAr  Json     @default("[]") @map("about_values_ar")
+  aboutValuesEn  Json     @default("[]") @map("about_values_en")
+  galleryImages  Json     @default("[]") @map("gallery_images")
+  heroTitleAr    String   @default("") @map("hero_title_ar") @db.VarChar(512)
+  heroTitleEn    String   @default("") @map("hero_title_en") @db.VarChar(512)
+  heroSubtitleAr String   @default("") @map("hero_subtitle_ar") @db.VarChar(1024)
+  heroSubtitleEn String   @default("") @map("hero_subtitle_en") @db.VarChar(1024)
+  aboutSubtitleAr String  @default("") @map("about_subtitle_ar") @db.VarChar(512)
+  aboutSubtitleEn String  @default("") @map("about_subtitle_en") @db.VarChar(512)
+  contactSubtitleAr String @default("") @map("contact_subtitle_ar") @db.VarChar(512)
+  contactSubtitleEn String @default("") @map("contact_subtitle_en") @db.VarChar(512)
+  branches       Json     @default("[]")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  users      User[]
+  categories Category[]
+  dishes     Dish[]
+  offers     Offer[]
+  settings   Setting[]
+
+  @@map("restaurants")
+}
+
 // ─── Users (Admin authentication) ────────────────────────────
 model User {
   id           Int      @id @default(autoincrement())
   username     String   @unique @db.VarChar(64)
   passwordHash String   @map("password_hash") @db.VarChar(255)
   role         UserRole @default(admin)
+  restaurantId String?  @map("restaurant_id") @db.VarChar(191)
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
+
+  restaurant Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   @@map("users")
 }
@@ -28,13 +74,16 @@ model User {
 // ─── Categories ──────────────────────────────────────────────
 model Category {
   id           Int      @id @default(autoincrement())
+  restaurantId String   @map("restaurant_id") @db.VarChar(191)
   nameAr       String   @map("name_ar") @db.VarChar(128)
   nameEn       String   @map("name_en") @db.VarChar(128)
   displayOrder Int      @default(0) @map("display_order") @db.SmallInt()
   createdAt    DateTime @default(now()) @map("created_at")
 
-  dishes Dish[]
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  dishes     Dish[]
 
+  @@index([restaurantId])
   @@index([displayOrder])
   @@map("categories")
 }
@@ -42,6 +91,7 @@ model Category {
 // ─── Dishes ──────────────────────────────────────────────────
 model Dish {
   id            Int      @id @default(autoincrement())
+  restaurantId  String   @map("restaurant_id") @db.VarChar(191)
   categoryId    Int      @map("category_id")
   nameAr        String   @map("name_ar") @db.VarChar(255)
   nameEn        String   @map("name_en") @db.VarChar(255)
@@ -63,9 +113,13 @@ model Dish {
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
-  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  category   Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
+  @@index([restaurantId])
   @@index([categoryId])
+  @@index([available])
+  @@index([featured])
   @@index([displayOrder])
   @@map("dishes")
 }
@@ -73,6 +127,7 @@ model Dish {
 // ─── Offers ──────────────────────────────────────────────────
 model Offer {
   id             Int      @id @default(autoincrement())
+  restaurantId   String   @map("restaurant_id") @db.VarChar(191)
   titleAr        String   @map("title_ar") @db.VarChar(255)
   titleEn        String   @map("title_en") @db.VarChar(255)
   descriptionAr  String   @map("description_ar") @db.Text()
@@ -85,14 +140,141 @@ model Offer {
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([restaurantId])
+  @@index([active])
+  @@index([featuredOnHome])
   @@map("offers")
 }
 
-// ─── Settings (Key-Value) ────────────────────────────────────
+// ─── Settings (Key-Value, kept for backwards compatibility) ──
 model Setting {
-  key       String   @id @db.VarChar(128)
-  value     String   @db.Text()
+  restaurantId String   @map("restaurant_id") @db.VarChar(191)
+  key          String   @db.VarChar(128)
+  value        String   @db.Text()
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@id([restaurantId, key])
+  @@map("settings")
+}
+
+// ─── Site settings (white-label CMS singleton, id = 1) ───────
+model SiteSetting {
+  id Int @id @default(autoincrement())
+
+  logoUrl      String @default("/logo.png") @map("logo_url") @db.Text()
+  faviconUrl   String @default("/logo.png") @map("favicon_url") @db.Text()
+  brandNameAr  String @default("مشويات أيادينا") @map("brand_name_ar") @db.VarChar(128)
+  brandNameEn  String @default("Ayadina Grills") @map("brand_name_en") @db.VarChar(128)
+
+  heroBgImageUrl          String @default("https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=1600&q=80") @map("hero_bg_image_url") @db.Text()
+  heroTitleAr             String @default("مشويات أصيلة ونكهات فاخرة") @map("hero_title_ar") @db.VarChar(255)
+  heroTitleEn             String @default("Authentic Grills & Luxury Flavors") @map("hero_title_en") @db.VarChar(255)
+  heroSubtitleAr          String @default("استمتع بمشويات الفحم الفاخرة، الضيافة الدافئة، وطعم أيادينا الأصيل.") @map("hero_subtitle_ar") @db.Text()
+  heroSubtitleEn          String @default("Experience premium charcoal-grilled dishes, warm hospitality, and the rich taste of Ayadina Grills.") @map("hero_subtitle_en") @db.Text()
+  heroPrimaryCtaTextAr    String @default("اطلب الآن") @map("hero_primary_cta_text_ar") @db.VarChar(128)
+  heroPrimaryCtaTextEn    String @default("Order Now") @map("hero_primary_cta_text_en") @db.VarChar(128)
+  heroPrimaryCtaLink      String @default("/menu") @map("hero_primary_cta_link") @db.Text()
+  heroSecondaryCtaTextAr  String @default("عرض القائمة") @map("hero_secondary_cta_text_ar") @db.VarChar(128)
+  heroSecondaryCtaTextEn  String @default("View Menu") @map("hero_secondary_cta_text_en") @db.VarChar(128)
+  heroSecondaryCtaLink    String @default("/menu") @map("hero_secondary_cta_link") @db.Text()
+
+  quickInfoTextAr String @default("زُرنا اليوم") @map("quick_info_text_ar") @db.VarChar(255)
+  quickInfoTextEn String @default("Visit Us Today") @map("quick_info_text_en") @db.VarChar(255)
+  quickInfoLink   String @default("/contact") @map("quick_info_link") @db.Text()
+
+  contactEmail   String @default("") @map("contact_email") @db.VarChar(255)
+  instagramUrl   String @default("") @map("instagram_url") @db.Text()
+  facebookUrl    String @default("") @map("facebook_url") @db.Text()
+  tiktokUrl      String @default("") @map("tiktok_url") @db.Text()
+
+  aboutStoryAr     String @default("وُلدت مشويات أيادينا من حب المشويات على الفحم والضيافة العربية الكريمة. على مدى سنوات، قدّمنا للعائلات والضيوف لحوماً مختارة بعناية، ووصفات تقليدية، وأجواء دافئة تشبه البيت. كل طبق يعكس التزامنا بالجودة والطزاجة وفن الشواية الخالد.") @map("about_story_ar") @db.Text()
+  aboutStoryEn     String @default("Ayadina Grills was born from a love of authentic charcoal grilling and generous Arabian hospitality. For years, we have served families and guests with carefully selected meats, traditional recipes, and a warm atmosphere that feels like home. Every dish reflects our commitment to quality, freshness, and the timeless art of the grill.") @map("about_story_en") @db.Text()
+  openingHoursAr   String @default("يومياً · 12:00 م – 12:00 ص") @map("opening_hours_ar") @db.VarChar(255)
+  openingHoursEn   String @default("Daily · 12:00 PM – 12:00 AM") @map("opening_hours_en") @db.VarChar(255)
+  copyrightTextAr  String @default("جميع الحقوق محفوظة") @map("copyright_text_ar") @db.VarChar(255)
+  copyrightTextEn  String @default("All rights reserved") @map("copyright_text_en") @db.VarChar(255)
+
+  featuredTitleAr       String @default("أطباق مميزة") @map("featured_title_ar") @db.VarChar(255)
+  featuredTitleEn       String @default("Featured Dishes") @map("featured_title_en") @db.VarChar(255)
+  featuredSubtitleAr    String @default("أكثر الأطباق المحببة لدى ضيوفنا") @map("featured_subtitle_ar") @db.VarChar(255)
+  featuredSubtitleEn    String @default("Our guests' most loved grills and specialties") @map("featured_subtitle_en") @db.VarChar(255)
+  announcementTitleAr   String @default("أحدث العروض") @map("announcement_title_ar") @db.VarChar(255)
+  announcementTitleEn   String @default("Latest Offers") @map("announcement_title_en") @db.VarChar(255)
+  announcementCtaAr     String @default("استكشف جميع العروض") @map("announcement_cta_ar") @db.VarChar(255)
+  announcementCtaEn     String @default("Explore All Offers") @map("announcement_cta_en") @db.VarChar(255)
+
+  aboutPageTitleAr      String @default("عن مشويات أيادينا") @map("about_page_title_ar") @db.VarChar(255)
+  aboutPageTitleEn      String @default("About Ayadina Grills") @map("about_page_title_en") @db.VarChar(255)
+  aboutPageSubtitleAr   String @default("قصة شغف وجودة وإتقان المشويات الأصيلة.") @map("about_page_subtitle_ar") @db.Text()
+  aboutPageSubtitleEn   String @default("A story of passion, quality, and authentic grill mastery.") @map("about_page_subtitle_en") @db.Text()
+  aboutStoryTitleAr     String @default("قصتنا") @map("about_story_title_ar") @db.VarChar(128)
+  aboutStoryTitleEn     String @default("Our Story") @map("about_story_title_en") @db.VarChar(128)
+  aboutStoryImageUrl    String @default("") @map("about_story_image_url") @db.Text()
+  aboutGalleryTitleAr   String @default("أجواء المطعم") @map("about_gallery_title_ar") @db.VarChar(128)
+  aboutGalleryTitleEn   String @default("Restaurant Ambiance") @map("about_gallery_title_en") @db.VarChar(128)
+
+  contactPageTitleAr       String @default("تواصل معنا") @map("contact_page_title_ar") @db.VarChar(255)
+  contactPageTitleEn       String @default("Contact Us") @map("contact_page_title_en") @db.VarChar(255)
+  contactPageSubtitleAr    String @default("يسعدنا تواصلك. زُر أحد فروعنا أو راسلنا مباشرة.") @map("contact_page_subtitle_ar") @db.Text()
+  contactPageSubtitleEn    String @default("We'd love to hear from you. Visit a branch or reach us instantly.") @map("contact_page_subtitle_en") @db.Text()
+  contactBranchesTitleAr   String @default("فروعنا") @map("contact_branches_title_ar") @db.VarChar(128)
+  contactBranchesTitleEn   String @default("Our Branches") @map("contact_branches_title_en") @db.VarChar(128)
+  contactMapTitleAr        String @default("موقعنا على الخريطة") @map("contact_map_title_ar") @db.VarChar(128)
+  contactMapTitleEn        String @default("Find Us on the Map") @map("contact_map_title_en") @db.VarChar(128)
+  contactWhatsappCtaAr     String @default("تواصل عبر الواتساب") @map("contact_whatsapp_cta_ar") @db.VarChar(128)
+  contactWhatsappCtaEn     String @default("Chat on WhatsApp") @map("contact_whatsapp_cta_en") @db.VarChar(128)
+
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@map("settings")
+  @@map("site_settings")
+}
+
+model Branch {
+  id            Int      @id @default(autoincrement())
+  nameAr        String   @map("name_ar") @db.VarChar(128)
+  nameEn        String   @map("name_en") @db.VarChar(128)
+  addressAr     String   @default("") @map("address_ar") @db.VarChar(512)
+  addressEn     String   @default("") @map("address_en") @db.VarChar(512)
+  phone         String   @default("") @db.VarChar(32)
+  mapEmbedUrl   String   @default("") @map("map_embed_url") @db.VarChar(2048)
+  directionsUrl String   @default("") @map("directions_url") @db.VarChar(2048)
+  displayOrder  Int      @default(0) @map("display_order") @db.SmallInt()
+  isMainBranch  Boolean  @default(false) @map("is_main_branch")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@index([displayOrder])
+  @@index([isMainBranch])
+  @@map("branches")
+}
+
+model GalleryImage {
+  id           Int      @id @default(autoincrement())
+  imageUrl     String   @map("image_url") @db.VarChar(2048)
+  titleAr      String   @default("") @map("title_ar") @db.VarChar(255)
+  titleEn      String   @default("") @map("title_en") @db.VarChar(255)
+  displayOrder Int      @default(0) @map("display_order") @db.SmallInt()
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([displayOrder])
+  @@map("gallery_images")
+}
+
+model ContactMessage {
+  id        Int      @id @default(autoincrement())
+  name      String   @db.VarChar(128)
+  email     String   @db.VarChar(255)
+  phone     String   @default("") @db.VarChar(32)
+  subject   String   @default("") @db.VarChar(255)
+  message   String   @db.Text()
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@map("contact_messages")
 }

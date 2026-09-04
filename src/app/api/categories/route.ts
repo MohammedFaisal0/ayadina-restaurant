@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
+import { getOrCreateDefaultRestaurantId } from "@/lib/restaurant";
 
 export const dynamic = "force-dynamic";
 
@@ -29,8 +30,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "nameAr and nameEn are required" }, { status: 400 });
     }
 
+    const restaurantId = await getOrCreateDefaultRestaurantId();
+
     const category = await prisma.category.create({
       data: {
+        restaurantId,
         nameAr,
         nameEn,
         displayOrder: displayOrder ?? 0,

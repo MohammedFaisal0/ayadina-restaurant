@@ -1,14 +1,16 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { Plus, Pencil, Trash2, Check, Languages } from "lucide-react";
+import { Plus, Pencil, Trash2, Languages, Calendar, Tag } from "lucide-react";
 import { ToggleSwitch } from "@/components/admin/ToggleSwitch";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { Modal } from "@/components/ui/Modal";
+import { ModalActions } from "@/components/ui/ModalActions";
+import { SmartImage } from "@/components/ui/SmartImage";
 import { useData } from "@/context/DataContext";
 import { useLocale } from "@/i18n/locale-context";
 import { buildBilingualText } from "@/lib/translate";
-import type { Offer, OfferFormData } from "@/types/data";
+import { getOfferCopy, type Offer, type OfferFormData } from "@/types/data";
 
 function emptyOfferForm(): OfferFormData {
   return {
@@ -31,13 +33,21 @@ type OfferModalProps = {
 function OfferFormModal({ open, offer, onClose, onSave }: OfferModalProps) {
   const { t } = useLocale();
   const [form, setForm] = useState<OfferFormData>(offer ?? emptyOfferForm());
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    if (open) setForm(offer ?? emptyOfferForm());
+    if (open) {
+      setForm(offer ?? emptyOfferForm());
+      setSaving(false);
+      setError("");
+    }
   }, [open, offer]);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
+    setSaving(true);
+    setError("");
     try {
       await onSave({
         ...form,
@@ -47,13 +57,24 @@ function OfferFormModal({ open, offer, onClose, onSave }: OfferModalProps) {
       });
       onClose();
     } catch (err) {
-      console.error(err);
+      setError(err instanceof Error ? err.message : t.admin.saveFailed);
+    } finally {
+      setSaving(false);
     }
   };
 
   return (
-    <Modal open={open} onClose={onClose} title={offer ? t.admin.editOffer : t.admin.addOffer} size="xl">
-      <form onSubmit={handleSubmit} className="space-y-5">
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={offer ? t.admin.editOffer : t.admin.addOffer}
+      icon={<Tag className="size-5" />}
+      size="xl"
+      footer={
+        <ModalActions formId="offer-form" onClose={onClose} saveLabel={t.admin.save} saving={saving} />
+      }
+    >
+      <form id="offer-form" onSubmit={handleSubmit} className="space-y-5">
         {/* Text fields — Arabic only */}
         <div className="space-y-3">
           <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
@@ -97,7 +118,7 @@ function OfferFormModal({ open, offer, onClose, onSave }: OfferModalProps) {
           style={{ color: "var(--text-muted)", backgroundColor: "var(--bg-surface)" }}
         >
           <Languages className="size-3.5 shrink-0" />
-          English fields auto-translated on save
+          {t.admin.englishAutoFilled}
         </div>
 
         {/* Image + Toggles — compact 2-col */}
@@ -125,23 +146,7 @@ function OfferFormModal({ open, offer, onClose, onSave }: OfferModalProps) {
           </div>
         </div>
 
-        <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:justify-end">
-          <button
-            type="button"
-            onClick={onClose}
-            className="inline-flex min-h-10 items-center justify-center rounded-full border px-5 text-sm transition-colors duration-300"
-            style={{ borderColor: "var(--border-default)", color: "var(--text-secondary)" }}
-          >
-            {t.admin.cancel}
-          </button>
-          <button
-            type="submit"
-            className="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-brand-gold px-5 text-sm font-semibold text-brand-dark transition-all duration-300 ease-in-out hover:bg-brand-gold-hover"
-          >
-            <Check className="size-4" />
-            {t.admin.save}
-          </button>
-        </div>
+        {error ? <p className="text-xs text-red-400">{error}</p> : null}
       </form>
     </Modal>
   );
@@ -154,34 +159,48 @@ export function OffersManagementContent() {
     toggleOfferActive, toggleOfferFeaturedOnHome,
   } = useData();
   const [offerModal, setOfferModal] = useState<Offer | null | "new">(null);
-  const [saving, setSaving] = useState(false);
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState("");
 
   const handleOfferSave = async (data: OfferFormData) => {
-    setSaving(true);
+    if (offerModal === "new") {
+      await addOffer(data);
+      return;
+    }
+    if (offerModal) await updateOffer(offerModal.id, data);
+  };
+
+  const runToggle = async (id: string, action: () => Promise<unknown>) => {
+    setBusyId(id);
+    setActionError("");
     try {
-      if (offerModal === "new") { await addOffer(data); return; }
-      if (offerModal) await updateOffer(offerModal.id, data);
-    } finally { setSaving(false); }
+      await action();
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : t.admin.actionFailed);
+    } finally {
+      setBusyId(null);
+    }
   };
 
   return (
-    <div className="space-y-6 p-4 sm:p-6 lg:p-8">
+    <div className="mx-auto w-full max-w-6xl space-y-6 px-4 py-6 sm:px-6 lg:px-8">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h2
-          className="text-xl font-semibold"
-          style={{ color: "var(--text-primary)" }}
-        >
+        <h1 className="text-2xl font-semibold" style={{ color: "var(--text-primary)" }}>
           {t.admin.offersManagement}
-        </h2>
+        </h1>
         <button
           type="button"
           onClick={() => setOfferModal("new")}
-          className="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-brand-gold px-5 text-sm font-semibold text-brand-dark transition-all duration-300 ease-in-out hover:bg-brand-gold-hover"
+          className="inline-flex min-h-11 items-center gap-2 rounded-full bg-brand-gold px-5 text-sm font-semibold text-brand-dark hover:bg-brand-gold-hover"
         >
           <Plus className="size-4" />
           {t.admin.addOffer}
         </button>
       </div>
+
+      {actionError ? (
+        <p className="rounded-xl border border-red-500/40 px-4 py-3 text-sm text-red-400">{actionError}</p>
+      ) : null}
 
       {offers.length === 0 ? (
         <p
@@ -191,67 +210,68 @@ export function OffersManagementContent() {
           {t.admin.noOffers}
         </p>
       ) : (
-        <div className="grid gap-4 lg:grid-cols-2">
-          {offers.map((offer) => (
-            <article
-              key={offer.id}
-              className="rounded-2xl border p-5"
-              style={{ borderColor: "var(--border-subtle)", backgroundColor: "var(--bg-card)" }}
-            >
-              <h3
-                className="text-lg font-semibold"
-                style={{ color: "var(--text-primary)" }}
+        <div className="grid gap-6 lg:grid-cols-2">
+          {offers.map((offer) => {
+            const copy = getOfferCopy(offer, locale);
+            const busy = busyId === offer.id;
+            return (
+              <article
+                key={offer.id}
+                className="hover-lift overflow-hidden rounded-2xl border"
+                style={{ borderColor: "var(--border-subtle)", backgroundColor: "var(--bg-card)" }}
               >
-                {offer.title[locale]}
-              </h3>
-              <p
-                className="mt-2 text-sm leading-7"
-                style={{ color: "var(--text-muted)" }}
-              >
-                {offer.description[locale]}
-              </p>
-              <p className="mt-2 text-xs text-brand-gold">
-                {t.common.validUntil}: {offer.validPeriod[locale]}
-              </p>
-
-              <div
-                className="mt-4 overflow-hidden rounded-xl border"
-                style={{ borderColor: "var(--border-subtle)" }}
-              >
-                <ToggleSwitch
-                  checked={offer.active}
-                  onChange={() => toggleOfferActive(offer.id)}
-                  label={offer.active ? t.admin.active : t.admin.inactive}
-                />
-                <div style={{ borderTop: "1px solid var(--border-subtle)" }} />
-                <ToggleSwitch
-                  checked={offer.featuredOnHome}
-                  onChange={() => toggleOfferFeaturedOnHome(offer.id)}
-                  label={t.admin.showOnHome}
-                />
-              </div>
-
-              <div className="mt-4 flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => setOfferModal(offer)}
-                  className="flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs transition-colors duration-300 hover:text-brand-gold"
-                  style={{ borderColor: "var(--border-default)", color: "var(--text-secondary)" }}
-                >
-                  <Pencil className="size-3" />
-                  {t.admin.editOffer}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { if (window.confirm(t.admin.confirmDelete)) deleteOffer(offer.id); }}
-                  className="flex items-center gap-1 rounded-full border border-red-500/40 px-3 py-1.5 text-xs text-red-400"
-                >
-                  <Trash2 className="size-3" />
-                  {t.admin.deleteOffer}
-                </button>
-              </div>
-            </article>
-          ))}
+                <div className="relative aspect-video">
+                  <SmartImage src={offer.image} alt={copy.title} fill sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/55 to-transparent" />
+                  <span className={`absolute start-3 top-3 rounded-full px-3 py-1 text-xs font-semibold ${offer.active ? "bg-brand-gold text-brand-dark" : "bg-black/60 text-white"}`}>
+                    {offer.active ? t.admin.active : t.admin.inactive}
+                  </span>
+                </div>
+                <div className="space-y-3 p-5">
+                  <h3 className="text-xl font-semibold" style={{ color: "var(--text-primary)" }}>{copy.title}</h3>
+                  <p className="text-sm leading-7" style={{ color: "var(--text-muted)" }}>{copy.description}</p>
+                  <p className="inline-flex items-center gap-1.5 text-sm text-brand-gold">
+                    <Calendar className="size-3.5" />
+                    {t.common.validUntil}: {copy.validPeriod}
+                  </p>
+                  <div className="overflow-hidden rounded-xl border" style={{ borderColor: "var(--border-subtle)" }}>
+                    <ToggleSwitch
+                      checked={offer.active}
+                      loading={busy}
+                      onChange={() => void runToggle(offer.id, () => toggleOfferActive(offer.id))}
+                      label={offer.active ? t.admin.active : t.admin.inactive}
+                    />
+                    <div style={{ borderTop: "1px solid var(--border-subtle)" }} />
+                    <ToggleSwitch
+                      checked={offer.featuredOnHome}
+                      loading={busy}
+                      onChange={() => void runToggle(offer.id, () => toggleOfferFeaturedOnHome(offer.id))}
+                      label={t.admin.showOnHome}
+                    />
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setOfferModal(offer)}
+                      className="inline-flex min-h-9 items-center gap-1 rounded-full border px-3 text-xs"
+                      style={{ borderColor: "var(--border-default)", color: "var(--text-secondary)" }}
+                    >
+                      <Pencil className="size-3" />
+                      {t.admin.editOffer}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { if (window.confirm(t.admin.confirmDelete)) void deleteOffer(offer.id); }}
+                      className="inline-flex min-h-9 items-center gap-1 rounded-full border border-red-500/40 px-3 text-xs text-red-400"
+                    >
+                      <Trash2 className="size-3" />
+                      {t.admin.deleteOffer}
+                    </button>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
         </div>
       )}
 

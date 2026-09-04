@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { X, Flame, Star, AlertTriangle } from "lucide-react";
+import { useState } from "react";
+import { AlertTriangle, Flame, Star, UtensilsCrossed } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { SmartImage } from "@/components/ui/SmartImage";
 import { useLocale } from "@/i18n/locale-context";
@@ -16,9 +16,10 @@ export function DishModal({ item, onClose }: DishModalProps) {
   const { locale, t } = useLocale();
   const [displayItem, setDisplayItem] = useState<Dish | null>(item);
 
-  useEffect(() => {
-    if (item) setDisplayItem(item);
-  }, [item]);
+  // Keep last dish for exit animation while `item` is null.
+  if (item != null && item !== displayItem) {
+    setDisplayItem(item);
+  }
 
   if (!displayItem) return null;
 
@@ -28,8 +29,9 @@ export function DishModal({ item, onClose }: DishModalProps) {
     <Modal
       open={Boolean(item)}
       onClose={onClose}
-      showCloseButton={false}
       size="lg"
+      icon={<UtensilsCrossed className="size-5" />}
+      title={dish.name}
       ariaLabelledBy="dish-modal-title"
       panelClassName="overflow-hidden"
       contentClassName="p-0"
@@ -43,37 +45,20 @@ export function DishModal({ item, onClose }: DishModalProps) {
           priority
           className="object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label={t.buttons.close}
-          className="absolute end-3 top-3 inline-flex size-9 items-center justify-center rounded-full backdrop-blur-md transition-all duration-300 ease-in-out hover:scale-110 hover:border-brand-gold hover:text-brand-gold"
-          style={{
-            border: "1px solid var(--glass-border)",
-            backgroundColor: "var(--glass-bg)",
-            color: "var(--text-primary)",
-          }}
-        >
-          <X className="size-4" />
-        </button>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
       </div>
 
-      <div className="modal-scroll space-y-3 p-4 sm:space-y-4 sm:p-5">
+      <div className="space-y-4 p-5 sm:p-6">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 space-y-1.5">
-            <h2
-              id="dish-modal-title"
-              className="text-xl font-semibold leading-tight sm:text-2xl"
-              style={{ color: "var(--text-primary)" }}
-            >
+            <h2 id="dish-modal-title" className="sr-only">
               {dish.name}
             </h2>
             <div className="flex flex-wrap items-center gap-1.5">
               {displayItem.badges.map((badge) => (
                 <span
                   key={badge}
-                  className="inline-flex items-center gap-1 rounded-full bg-brand-gold/15 px-2 py-0.5 text-xs font-medium text-brand-gold ring-1 ring-brand-gold/30"
+                  className="inline-flex items-center gap-1 rounded-full bg-brand-gold/15 px-2.5 py-1 text-xs font-medium text-brand-gold ring-1 ring-brand-gold/30"
                 >
                   {badge === "spicy" ? (
                     <Flame className="size-3" />
@@ -84,28 +69,29 @@ export function DishModal({ item, onClose }: DishModalProps) {
                 </span>
               ))}
               <span
-                className="inline-flex items-center rounded-full px-2 py-0.5 text-xs ring-1"
-                style={{ color: "var(--text-secondary)", backgroundColor: "var(--bg-surface)", boxShadow: "inset 0 0 0 1px var(--border-default)" }}
+                className="inline-flex items-center rounded-full px-2.5 py-1 text-xs ring-1"
+                style={{
+                  color: "var(--text-secondary)",
+                  backgroundColor: "var(--bg-surface)",
+                  boxShadow: "inset 0 0 0 1px var(--border-default)",
+                }}
               >
                 {displayItem.calories} {t.common.kcal}
               </span>
             </div>
           </div>
-          <p className="shrink-0 text-lg font-bold text-brand-gold">
+          <p className="shrink-0 text-lg font-bold text-brand-gold sm:text-xl">
             {displayItem.price} {t.common.price}
           </p>
         </div>
 
-        <p
-          className="text-sm leading-6 sm:text-[15px]"
-          style={{ color: "var(--text-secondary)" }}
-        >
+        <p className="text-sm leading-6 sm:text-[15px]" style={{ color: "var(--text-secondary)" }}>
           {dish.description}
         </p>
 
         <div>
           <h3
-            className="mb-1.5 text-xs font-semibold uppercase tracking-wider"
+            className="mb-2 text-xs font-semibold uppercase tracking-wider"
             style={{ color: "var(--text-muted)" }}
           >
             {t.common.ingredients}
@@ -114,7 +100,7 @@ export function DishModal({ item, onClose }: DishModalProps) {
             {dish.ingredients.map((ingredient) => (
               <li
                 key={ingredient}
-                className="rounded-full px-2.5 py-0.5 text-xs ring-1"
+                className="rounded-full px-2.5 py-1 text-xs ring-1"
                 style={{
                   backgroundColor: "var(--bg-surface)",
                   color: "var(--text-secondary)",
@@ -129,25 +115,25 @@ export function DishModal({ item, onClose }: DishModalProps) {
 
         {dish.allergens.length > 0 ? (
           <div
-            className="rounded-xl border p-3"
+            className="rounded-2xl border p-3.5"
             style={{ borderColor: "var(--border-gold)", backgroundColor: "var(--border-gold)" }}
           >
-            <h3 className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-brand-gold">
+            <h3 className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-brand-gold">
               <AlertTriangle className="size-3.5" />
               {t.common.allergens}
             </h3>
             <div className="flex flex-wrap gap-1.5">
               {dish.allergens.map((allergen) => (
-                <li
+                <span
                   key={allergen}
-                  className="list-none rounded-full px-2 py-0.5 text-xs font-medium text-brand-gold"
+                  className="rounded-full px-2.5 py-1 text-xs font-medium text-brand-gold"
                   style={{ backgroundColor: "var(--bg-surface)" }}
                 >
                   {allergen}
-                </li>
+                </span>
               ))}
             </div>
-            <p className="mt-1.5 text-[11px] leading-5 text-brand-gold opacity-80">
+            <p className="mt-2 text-[11px] leading-5 text-brand-gold opacity-80">
               {t.common.allergenWarning}
             </p>
           </div>

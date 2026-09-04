@@ -25,6 +25,13 @@ html[data-theme="dark"] {
   --text-muted: #71717A;
   --glass-bg: rgba(20, 20, 20, 0.8);
   --glass-border: rgba(255, 255, 255, 0.1);
+  --modal-panel: rgba(23, 23, 23, 0.95);
+  --modal-header-bg: rgba(18, 18, 18, 0.98);
+  --modal-border: rgba(38, 38, 38, 0.95);
+  --modal-close-bg: rgba(38, 38, 38, 0.85);
+  --modal-close-hover: rgba(64, 64, 64, 0.95);
+  --modal-scrollbar: rgba(255, 255, 255, 0.18);
+  --modal-scrollbar-hover: rgba(243, 167, 18, 0.45);
 }
 
 /* ── Light Theme (Ayadina warm ivory, marble, amber gold) ── */
@@ -52,6 +59,13 @@ html[data-theme="light"] {
   /* Glassmorphic & Overlays */
   --glass-bg: rgba(245, 240, 235, 0.88);
   --glass-border: rgba(180, 140, 100, 0.18);
+  --modal-panel: rgba(255, 255, 255, 0.96);
+  --modal-header-bg: rgba(250, 246, 240, 0.98);
+  --modal-border: rgba(180, 140, 100, 0.22);
+  --modal-close-bg: rgba(239, 232, 225, 0.9);
+  --modal-close-hover: rgba(232, 220, 208, 1);
+  --modal-scrollbar: rgba(180, 140, 100, 0.35);
+  --modal-scrollbar-hover: rgba(217, 130, 43, 0.55);
 }
 
 html {
@@ -80,27 +94,64 @@ html body,
     opacity 0.3s ease-in-out;
 }
 
-.modal-scroll {
+.modal-scroll,
+.custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: var(--border-default) transparent;
+  scrollbar-color: var(--modal-scrollbar) transparent;
 }
 
-.modal-scroll::-webkit-scrollbar {
+.modal-scroll::-webkit-scrollbar,
+.custom-scrollbar::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
-.modal-scroll::-webkit-scrollbar-track {
+.modal-scroll::-webkit-scrollbar-track,
+.custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
+  margin-block: 8px;
 }
 
-.modal-scroll::-webkit-scrollbar-thumb {
-  background-color: var(--border-default);
+.modal-scroll::-webkit-scrollbar-thumb,
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--modal-scrollbar);
   border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 
-.modal-scroll::-webkit-scrollbar-thumb:hover {
-  background-color: var(--text-muted);
+.modal-scroll::-webkit-scrollbar-thumb:hover,
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: var(--modal-scrollbar-hover);
+}
+
+.modal-btn-primary {
+  box-shadow: 0 0 0 0 rgba(243, 167, 18, 0);
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.25s ease,
+    transform 0.2s ease;
+}
+
+.modal-btn-primary:hover:not(:disabled) {
+  box-shadow: 0 0 24px -4px rgba(243, 167, 18, 0.55);
+  transform: translateY(-1px);
+}
+
+.modal-btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Horizontal filter rails scroll by touch/wheel without a native scrollbar. */
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
 }
 
 @keyframes modal-fade-in {
@@ -126,4 +177,81 @@ html body,
 
 .unicode-bidi-isolate {
   unicode-bidi: isolate;
+}
+
+/* ── Page & element micro-animations ─────────────────────── */
+@keyframes page-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fade-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .page-enter {
+    animation: page-enter 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .animate-rise {
+    animation: rise-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .animate-fade-scale {
+    animation: fade-scale-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .animate-rise-delay-1 {
+    animation-delay: 0.06s;
+  }
+  .animate-rise-delay-2 {
+    animation-delay: 0.12s;
+  }
+  .animate-rise-delay-3 {
+    animation-delay: 0.18s;
+  }
+  .animate-rise-delay-4 {
+    animation-delay: 0.24s;
+  }
+
+  .hover-lift {
+    transition:
+      transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 0.3s ease,
+      border-color 0.3s ease;
+  }
+  .hover-lift:hover {
+    transform: translateY(-2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter,
+  .animate-rise,
+  .animate-fade-scale {
+    animation: none;
+  }
 }

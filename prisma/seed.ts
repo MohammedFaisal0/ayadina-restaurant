@@ -6,11 +6,40 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("🌱 Seeding database...");
 
+  const restaurant = await prisma.restaurant.upsert({
+    where: { slug: "ayadina" },
+    update: {
+      nameAr: "مشويات أيادينا",
+      nameEn: "Ayadina Grills",
+      isActive: true,
+    },
+    create: {
+      slug: "ayadina",
+      nameAr: "مشويات أيادينا",
+      nameEn: "Ayadina Grills",
+      phone: "+966112345678",
+      whatsapp: "966500000000",
+      openingHours: "Daily · 12:00 PM – 12:00 AM",
+      locationAr: "الرياض",
+      locationEn: "Riyadh",
+      aboutStoryAr: "",
+      aboutStoryEn: "",
+      aboutVisionAr: "",
+      aboutVisionEn: "",
+      aboutValuesAr: [],
+      aboutValuesEn: [],
+      galleryImages: [],
+      branches: [],
+    },
+  });
+  const restaurantId = restaurant.id;
+  console.log(`✅ Restaurant: ${restaurant.slug} (${restaurantId})`);
+
   const passwordHash = await bcrypt.hash("admin123", 12);
   await prisma.user.upsert({
     where: { username: "admin" },
-    update: { passwordHash },
-    create: { username: "admin", passwordHash, role: "admin" },
+    update: { passwordHash, restaurantId },
+    create: { username: "admin", passwordHash, role: "admin", restaurantId },
   });
   console.log("✅ User: admin / admin123");
 
@@ -23,11 +52,75 @@ async function main() {
   for (const cat of categoryData) {
     await prisma.category.upsert({
       where: { id: cat.id },
-      update: { nameAr: cat.nameAr, nameEn: cat.nameEn, displayOrder: cat.displayOrder },
-      create: cat,
+      update: {
+        restaurantId,
+        nameAr: cat.nameAr,
+        nameEn: cat.nameEn,
+        displayOrder: cat.displayOrder,
+      },
+      create: { ...cat, restaurantId },
     });
   }
   console.log("✅ Categories seeded");
+
+  await prisma.siteSetting.upsert({
+    where: { id: 1 },
+    update: {},
+    create: { id: 1 },
+  });
+  console.log("✅ Site settings seeded");
+
+  const branches = [
+    {
+      id: 1,
+      nameAr: "فرع المعالي",
+      nameEn: "Al-Maali Branch",
+      addressAr: "حي المعالي، الرياض",
+      addressEn: "Al-Maali District, Riyadh",
+      phone: "+966112345678",
+      mapEmbedUrl: "",
+      directionsUrl: "https://maps.google.com/?q=24.7136,46.6753",
+      displayOrder: 1,
+      isMainBranch: true,
+    },
+    {
+      id: 2,
+      nameAr: "فرع النظيم",
+      nameEn: "Al-Naseem Branch",
+      addressAr: "حي النظيم، الرياض",
+      addressEn: "Al-Naseem District, Riyadh",
+      phone: "+966112345679",
+      mapEmbedUrl: "",
+      directionsUrl: "https://maps.google.com/?q=24.7494,46.8128",
+      displayOrder: 2,
+      isMainBranch: false,
+    },
+  ];
+  for (const branch of branches) {
+    await prisma.branch.upsert({
+      where: { id: branch.id },
+      update: {},
+      create: branch,
+    });
+  }
+  console.log("✅ Branches seeded");
+
+  const gallery = [
+    { id: 1, imageUrl: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80", titleAr: "", titleEn: "", displayOrder: 1 },
+    { id: 2, imageUrl: "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=800&q=80", titleAr: "", titleEn: "", displayOrder: 2 },
+    { id: 3, imageUrl: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80", titleAr: "", titleEn: "", displayOrder: 3 },
+    { id: 4, imageUrl: "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&q=80", titleAr: "", titleEn: "", displayOrder: 4 },
+    { id: 5, imageUrl: "https://images.unsplash.com/photo-1590846400822-0a1a4a5b5f5b?w=800&q=80", titleAr: "", titleEn: "", displayOrder: 5 },
+    { id: 6, imageUrl: "https://images.unsplash.com/photo-1551218808-94e220e084d2?w=800&q=80", titleAr: "", titleEn: "", displayOrder: 6 },
+  ];
+  for (const image of gallery) {
+    await prisma.galleryImage.upsert({
+      where: { id: image.id },
+      update: {},
+      create: image,
+    });
+  }
+  console.log("✅ Gallery seeded");
 
   const dishData = [
     {
@@ -180,6 +273,7 @@ async function main() {
     await prisma.dish.upsert({
       where: { id: dish.id },
       update: {
+        restaurantId,
         categoryId: dish.categoryId, price: dish.price, calories: dish.calories,
         badges: dish.badges, imageUrl: dish.imageUrl, featured: dish.featured,
         available: dish.available, displayOrder: dish.displayOrder,
@@ -190,7 +284,9 @@ async function main() {
         allergensAr: dish.allergensAr, allergensEn: dish.allergensEn,
       },
       create: {
-        id: dish.id, categoryId: dish.categoryId, price: dish.price, calories: dish.calories,
+        id: dish.id,
+        restaurantId,
+        categoryId: dish.categoryId, price: dish.price, calories: dish.calories,
         badges: dish.badges, imageUrl: dish.imageUrl, featured: dish.featured,
         available: dish.available, displayOrder: dish.displayOrder,
         nameAr: dish.nameAr, nameEn: dish.nameEn,
@@ -234,13 +330,16 @@ async function main() {
     await prisma.offer.upsert({
       where: { id: offer.id },
       update: {
+        restaurantId,
         active: offer.active, featuredOnHome: offer.featuredOnHome, imageUrl: offer.imageUrl,
         titleAr: offer.titleAr, titleEn: offer.titleEn,
         descriptionAr: offer.descriptionAr, descriptionEn: offer.descriptionEn,
         validPeriodAr: offer.validPeriodAr, validPeriodEn: offer.validPeriodEn,
       },
       create: {
-        id: offer.id, active: offer.active, featuredOnHome: offer.featuredOnHome, imageUrl: offer.imageUrl,
+        id: offer.id,
+        restaurantId,
+        active: offer.active, featuredOnHome: offer.featuredOnHome, imageUrl: offer.imageUrl,
         titleAr: offer.titleAr, titleEn: offer.titleEn,
         descriptionAr: offer.descriptionAr, descriptionEn: offer.descriptionEn,
         validPeriodAr: offer.validPeriodAr, validPeriodEn: offer.validPeriodEn,
@@ -257,14 +356,14 @@ async function main() {
     { key: "site_logo_url", value: "/logo.png" },
     { key: "opening_hour", value: "12" },
     { key: "closing_hour", value: "24" },
-    { key: "whatsapp_number", value: "966500000000" },
-    { key: "primary_phone", value: "+966112345678" },
   ];
   for (const s of settings) {
     await prisma.setting.upsert({
-      where: { key: s.key },
+      where: {
+        restaurantId_key: { restaurantId, key: s.key },
+      },
       update: { value: s.value },
-      create: s,
+      create: { restaurantId, key: s.key, value: s.value },
     });
   }
   console.log("✅ Settings seeded");

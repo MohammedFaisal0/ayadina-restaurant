@@ -1,17 +1,35 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { Plus, Pencil, Trash2, Check, Flame, Star, Languages } from "lucide-react";
+import {
+  Check,
+  Edit3,
+  Eye,
+  EyeOff,
+  Flame,
+  FolderOpen,
+  Home,
+  Languages,
+  Loader2,
+  MoreVertical,
+  Plus,
+  Search,
+  Star,
+  Trash2,
+  UtensilsCrossed,
+} from "lucide-react";
 import { ToggleSwitch } from "@/components/admin/ToggleSwitch";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { Modal } from "@/components/ui/Modal";
+import { ModalActions } from "@/components/ui/ModalActions";
+import { SmartImage } from "@/components/ui/SmartImage";
 import { useData } from "@/context/DataContext";
 import { useLocale } from "@/i18n/locale-context";
 import {
   buildBilingualList,
   buildBilingualText,
 } from "@/lib/translate";
-import type { Category, CategoryFormData, Dish, DishFormData } from "@/types/data";
+import { getDishCopy, type Category, type CategoryFormData, type Dish, type DishFormData } from "@/types/data";
 
 function parseList(value: string): string[] {
   return value.split(",").map((item) => item.trim()).filter(Boolean);
@@ -46,20 +64,35 @@ type CategoryModalProps = {
 function CategoryModal({ open, category, onClose, onSave }: CategoryModalProps) {
   const { t } = useLocale();
   const [nameAr, setNameAr] = useState(category?.name.ar ?? "");
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (open) setNameAr(category?.name.ar ?? "");
+    if (open) {
+      setNameAr(category?.name.ar ?? "");
+      setSaving(false);
+    }
   }, [open, category]);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    await onSave({ name: await buildBilingualText(nameAr, category?.name.en, category?.name.ar) });
-    onClose();
+    setSaving(true);
+    try {
+      await onSave({ name: await buildBilingualText(nameAr, category?.name.en, category?.name.ar) });
+      onClose();
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
-    <Modal open={open} onClose={onClose} title={category ? t.admin.editCategory : t.admin.addCategory}>
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={category ? t.admin.editCategory : t.admin.addCategory}
+      icon={<FolderOpen className="size-5" />}
+      footer={<ModalActions formId="category-form" onClose={onClose} saveLabel={t.admin.save} saving={saving} />}
+    >
+      <form id="category-form" onSubmit={handleSubmit} className="space-y-4">
         <label className="block space-y-2">
           <span style={{ color: "var(--text-secondary)" }} className="text-sm font-medium">
             {t.admin.categoryNameAr}
@@ -68,7 +101,8 @@ function CategoryModal({ open, category, onClose, onSave }: CategoryModalProps) 
             value={nameAr}
             onChange={(event) => setNameAr(event.target.value)}
             required
-            className="w-full rounded-xl border px-4 py-3 text-sm transition-all duration-300 ease-in-out focus:border-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold/30"
+            disabled={saving}
+            className="w-full rounded-xl border px-4 py-3 text-sm transition-all duration-300 ease-in-out focus:border-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold/30 disabled:opacity-60"
             style={{ borderColor: "var(--border-default)", backgroundColor: "var(--bg-surface)", color: "var(--text-primary)" }}
           />
         </label>
@@ -77,9 +111,8 @@ function CategoryModal({ open, category, onClose, onSave }: CategoryModalProps) 
           style={{ color: "var(--text-muted)", backgroundColor: "var(--bg-surface)" }}
         >
           <Languages className="size-3.5 shrink-0" />
-          English auto-filled on save
+          {t.admin.englishAutoFilled}
         </div>
-        <ModalActions onClose={onClose} saveLabel={t.admin.save} />
       </form>
     </Modal>
   );
@@ -101,6 +134,7 @@ function DishFormModal({ open, dish, categories, onClose, onSave }: DishFormModa
   const [ingredientsAr, setIngredientsAr] = useState(dish?.ingredients.ar.join(", ") ?? "");
   const [allergensAr, setAllergensAr] = useState(dish?.allergens.ar.join(", ") ?? "");
   const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -109,6 +143,7 @@ function DishFormModal({ open, dish, categories, onClose, onSave }: DishFormModa
       setIngredientsAr(next.ingredients.ar.join(", "));
       setAllergensAr(next.allergens.ar.join(", "));
       setError("");
+      setSaving(false);
     }
   }, [open, dish, categories]);
 
@@ -117,6 +152,7 @@ function DishFormModal({ open, dish, categories, onClose, onSave }: DishFormModa
     const arIngredients = parseList(ingredientsAr);
     const arAllergens = parseList(allergensAr);
     setError("");
+    setSaving(true);
     try {
       await onSave({
         ...form,
@@ -133,6 +169,8 @@ function DishFormModal({ open, dish, categories, onClose, onSave }: DishFormModa
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Translation failed");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -146,8 +184,15 @@ function DishFormModal({ open, dish, categories, onClose, onSave }: DishFormModa
   };
 
   return (
-    <Modal open={open} onClose={onClose} title={dish ? t.admin.editDish : t.admin.addDish} size="xl">
-      <form onSubmit={handleSubmit} className="space-y-5">
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={dish ? t.admin.editDish : t.admin.addDish}
+      icon={<UtensilsCrossed className="size-5" />}
+      size="xl"
+      footer={<ModalActions formId="dish-form" onClose={onClose} saveLabel={t.admin.save} saving={saving} />}
+    >
+      <form id="dish-form" onSubmit={handleSubmit} className="space-y-5">
         {/* Image Upload */}
         <ImageUpload
           value={form.image}
@@ -220,7 +265,7 @@ function DishFormModal({ open, dish, categories, onClose, onSave }: DishFormModa
           style={{ color: "var(--text-muted)", backgroundColor: "var(--bg-surface)" }}
         >
           <Languages className="size-3.5 shrink-0" />
-          English fields auto-translated on save
+          {t.admin.englishAutoFilled}
         </div>
 
         {/* Compact 2-column grid for controls */}
@@ -322,10 +367,276 @@ function DishFormModal({ open, dish, categories, onClose, onSave }: DishFormModa
         </div>
 
         {error ? <p className="text-xs text-red-400">{error}</p> : null}
-
-        <ModalActions onClose={onClose} saveLabel={t.admin.save} />
       </form>
     </Modal>
+  );
+}
+
+/* ─── Compact row controls ─── */
+
+type IconType = typeof Flame;
+
+/** Square icon toggle used for the per-row availability / featured switches. */
+function IconToggle({
+  checked,
+  onClick,
+  disabled,
+  label,
+  icon: Icon,
+}: {
+  checked: boolean;
+  onClick: () => void;
+  disabled?: boolean;
+  label: string;
+  icon: IconType;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      title={label}
+      disabled={disabled}
+      onClick={onClick}
+      className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg border transition-all duration-200 disabled:cursor-wait disabled:opacity-40"
+      style={{
+        backgroundColor: checked ? "var(--brand-gold, #F3A712)" : "transparent",
+        borderColor: checked ? "transparent" : "var(--border-default)",
+        color: checked ? "#0B0B0B" : "var(--text-muted)",
+      }}
+    >
+      {disabled ? <Loader2 className="size-4 animate-spin" /> : <Icon className="size-4" />}
+    </button>
+  );
+}
+
+function IconAction({
+  onClick,
+  label,
+  icon: Icon,
+  danger = false,
+}: {
+  onClick: () => void;
+  label: string;
+  icon: IconType;
+  danger?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      title={label}
+      className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg border transition-all duration-200 hover:opacity-80"
+      style={{
+        borderColor: danger ? "rgba(239, 68, 68, 0.4)" : "var(--border-default)",
+        color: danger ? "#f87171" : "var(--text-secondary)",
+      }}
+    >
+      <Icon className="size-4" />
+    </button>
+  );
+}
+
+type RowMenuItem = {
+  key: string;
+  label: string;
+  icon: IconType;
+  active?: boolean;
+  danger?: boolean;
+  onSelect: () => void;
+};
+
+/** Overflow menu keeping low-frequency actions (badges, delete) out of the row. */
+function RowMenu({ label, items }: { label: string; items: RowMenuItem[] }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((current) => !current)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label={label}
+        title={label}
+        className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg border transition-all duration-200"
+        style={{ borderColor: "var(--border-default)", color: "var(--text-secondary)" }}
+      >
+        <MoreVertical className="size-4" />
+      </button>
+      {open ? (
+        <>
+          <button
+            type="button"
+            aria-hidden
+            tabIndex={-1}
+            className="fixed inset-0 z-40 cursor-default"
+            onClick={() => setOpen(false)}
+          />
+          <div
+            role="menu"
+            className="absolute end-0 top-full z-50 mt-1 w-52 overflow-hidden rounded-xl border p-1 shadow-xl"
+            style={{ borderColor: "var(--border-default)", backgroundColor: "var(--bg-card)" }}
+          >
+            {items.map((item) => (
+              <button
+                key={item.key}
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setOpen(false);
+                  item.onSelect();
+                }}
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-start text-sm transition-colors duration-200 hover:bg-black/10"
+                style={{ color: item.danger ? "#f87171" : "var(--text-secondary)" }}
+              >
+                <item.icon
+                  className="size-4 shrink-0"
+                  style={item.active ? { color: "var(--brand-gold, #F3A712)" } : undefined}
+                />
+                <span className="flex-1">{item.label}</span>
+                {item.active ? <Check className="size-3.5 text-brand-gold" /> : null}
+              </button>
+            ))}
+          </div>
+        </>
+      ) : null}
+    </div>
+  );
+}
+
+/* ─── Dish Row ─── */
+
+type DishRowProps = {
+  dish: Dish;
+  categoryLabel: string;
+  busy: boolean;
+  onEdit: () => void;
+  onDelete: () => void;
+  onToggleAvailable: () => void;
+  onToggleFeatured: () => void;
+  onToggleBadge: (badge: "spicy" | "popular") => void;
+};
+
+function DishRow({
+  dish,
+  categoryLabel,
+  busy,
+  onEdit,
+  onDelete,
+  onToggleAvailable,
+  onToggleFeatured,
+  onToggleBadge,
+}: DishRowProps) {
+  const { t, locale } = useLocale();
+  const copy = getDishCopy(dish, locale);
+
+  return (
+    <li
+      className="hover-lift flex flex-wrap items-center gap-3 rounded-2xl border p-3 transition-colors duration-200 sm:flex-nowrap sm:gap-4"
+      style={{
+        borderColor: "var(--border-subtle)",
+        backgroundColor: "var(--bg-card)",
+        opacity: dish.available ? 1 : 0.65,
+      }}
+    >
+      <div className="relative size-20 shrink-0 overflow-hidden rounded-xl">
+        <SmartImage src={dish.image} alt={copy.name} fill sizes="80px" className="object-cover" />
+        {dish.badges.length > 0 ? (
+          <div className="absolute inset-x-1 bottom-1 flex flex-wrap gap-1">
+            {dish.badges.map((badge) => (
+              <span
+                key={badge}
+                title={badge === "spicy" ? t.common.spicy : t.common.popular}
+                className="inline-flex size-5 items-center justify-center rounded-full bg-brand-gold text-brand-dark shadow-sm"
+              >
+                {badge === "spicy" ? <Flame className="size-3" /> : <Star className="size-3" />}
+              </span>
+            ))}
+          </div>
+        ) : null}
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <div className="flex min-w-0 items-center gap-2">
+          <h3 className="truncate font-semibold" style={{ color: "var(--text-primary)" }}>
+            {copy.name}
+          </h3>
+          {!dish.available ? (
+            <span
+              className="inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
+              style={{
+                borderColor: "var(--border-default)",
+                backgroundColor: "var(--bg-surface)",
+                color: "var(--text-muted)",
+              }}
+            >
+              <EyeOff className="size-3" />
+              {t.admin.hidden}
+            </span>
+          ) : null}
+        </div>
+        <p className="truncate text-xs" style={{ color: "var(--text-muted)" }}>
+          {copy.shortDescription}
+        </p>
+        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+          <span className="font-bold text-brand-gold">
+            {dish.price} {t.common.price}
+          </span>
+          <span style={{ color: "var(--border-default)" }}>·</span>
+          <span className="truncate" style={{ color: "var(--text-muted)" }}>
+            {categoryLabel}
+          </span>
+        </div>
+      </div>
+
+      <div className="flex basis-full items-center justify-end gap-1.5 sm:basis-auto">
+        <IconToggle
+          checked={dish.available}
+          disabled={busy}
+          onClick={onToggleAvailable}
+          label={dish.available ? t.admin.visible : t.admin.hidden}
+          icon={dish.available ? Eye : EyeOff}
+        />
+        <IconToggle
+          checked={dish.featured}
+          disabled={busy}
+          onClick={onToggleFeatured}
+          label={t.admin.featured}
+          icon={Home}
+        />
+        <span className="mx-1 h-6 w-px" style={{ backgroundColor: "var(--border-subtle)" }} />
+        <IconAction onClick={onEdit} label={t.admin.editDish} icon={Edit3} />
+        <RowMenu
+          label={t.admin.moreActions}
+          items={[
+            {
+              key: "spicy",
+              label: t.common.spicy,
+              icon: Flame,
+              active: dish.badges.includes("spicy"),
+              onSelect: () => onToggleBadge("spicy"),
+            },
+            {
+              key: "popular",
+              label: t.common.popular,
+              icon: Star,
+              active: dish.badges.includes("popular"),
+              onSelect: () => onToggleBadge("popular"),
+            },
+            {
+              key: "delete",
+              label: t.admin.deleteDish,
+              icon: Trash2,
+              danger: true,
+              onSelect: onDelete,
+            },
+          ]}
+        />
+      </div>
+    </li>
   );
 }
 
@@ -340,161 +651,169 @@ export function MenuManagementContent() {
 
   const [categoryModal, setCategoryModal] = useState<Category | null | "new">(null);
   const [dishModal, setDishModal] = useState<Dish | null | "new">(null);
-  const [saving, setSaving] = useState(false);
+  const [activeCategory, setActiveCategory] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState("");
+
+  const filteredDishes = dishes.filter((item) => {
+    const query = searchQuery.trim().toLowerCase();
+    const copy = getDishCopy(item, locale);
+    const matchesCategory = activeCategory === "all" || item.categoryId === activeCategory;
+    const matchesSearch =
+      query.length === 0 ||
+      copy.name.toLowerCase().includes(query) ||
+      item.name.ar.toLowerCase().includes(query) ||
+      copy.shortDescription.toLowerCase().includes(query);
+    return matchesCategory && matchesSearch;
+  });
 
   const handleCategorySave = async (data: CategoryFormData) => {
-    setSaving(true);
-    try {
-      if (categoryModal === "new") { await addCategory(data); return; }
-      if (categoryModal) await updateCategory(categoryModal.id, data);
-    } finally { setSaving(false); }
+    if (categoryModal === "new") { await addCategory(data); return; }
+    if (categoryModal) await updateCategory(categoryModal.id, data);
   };
 
   const handleDishSave = async (data: DishFormData) => {
-    setSaving(true);
-    try {
-      if (dishModal === "new") { await addDish(data); return; }
-      if (dishModal) await updateDish(dishModal.id, data);
-    } finally { setSaving(false); }
+    if (dishModal === "new") { await addDish(data); return; }
+    if (dishModal) await updateDish(dishModal.id, data);
   };
 
+  const runAction = async (dishId: string, action: () => Promise<unknown>) => {
+    setBusyId(dishId);
+    setActionError("");
+    try {
+      await action();
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : t.admin.actionFailed);
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const toggleBadge = (dish: Dish, badge: "spicy" | "popular") => {
+    const badges = dish.badges.includes(badge)
+      ? dish.badges.filter((item) => item !== badge)
+      : [...dish.badges, badge];
+    void runAction(dish.id, () => updateDish(dish.id, { badges }));
+  };
+
+  const categoryLabel = (categoryId: string) =>
+    categories.find((item) => item.id === categoryId)?.name[locale] ?? "—";
+
   return (
-    <div className="space-y-8 p-4 sm:p-6 lg:p-8">
-      <section className="space-y-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-xl font-semibold" style={{ color: "var(--text-primary)" }}>
-            {t.admin.categories}
-          </h2>
+    <div className="mx-auto w-full max-w-7xl space-y-5 px-4 py-6 sm:px-6 lg:px-8">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-2xl font-semibold" style={{ color: "var(--text-primary)" }}>
+          {t.admin.menuManagement}
+        </h1>
+        <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={() => setCategoryModal("new")}
-            className="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-brand-gold px-5 text-sm font-semibold text-brand-dark transition-all duration-300 ease-in-out hover:bg-brand-gold-hover"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border px-5 text-sm font-medium transition-colors duration-200"
+            style={{ borderColor: "var(--border-default)", color: "var(--text-secondary)" }}
           >
             <Plus className="size-4" />
             {t.admin.addCategory}
           </button>
-        </div>
-
-        {categories.length === 0 ? (
-          <p
-            className="rounded-2xl border px-4 py-8 text-center text-sm"
-            style={{ borderColor: "var(--border-subtle)", backgroundColor: "var(--bg-card)", color: "var(--text-muted)" }}
-          >
-            {t.admin.noCategories}
-          </p>
-        ) : (
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {categories.map((category) => (
-              <article
-                key={category.id}
-                className="rounded-2xl border p-4"
-                style={{ borderColor: "var(--border-subtle)", backgroundColor: "var(--bg-card)" }}
-              >
-                <h3 style={{ color: "var(--text-primary)" }} className="font-medium">
-                  {category.name[locale]}
-                </h3>
-                <p style={{ color: "var(--text-muted)" }} className="mt-1 text-xs">
-                  {category.name.ar} · {category.name.en}
-                </p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setCategoryModal(category)}
-                    className="flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs transition-colors duration-300 hover:text-brand-gold"
-                    style={{ borderColor: "var(--border-default)", color: "var(--text-secondary)" }}
-                  >
-                    <Pencil className="size-3" />
-                    {t.admin.editCategory}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { if (window.confirm(t.admin.confirmDelete)) deleteCategory(category.id); }}
-                    className="flex items-center gap-1 rounded-full border border-red-500/40 px-3 py-1.5 text-xs text-red-400"
-                  >
-                    <Trash2 className="size-3" />
-                    {t.admin.deleteCategory}
-                  </button>
-                </div>
-              </article>
-            ))}
-          </div>
-        )}
-      </section>
-
-      <section className="space-y-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-xl font-semibold" style={{ color: "var(--text-primary)" }}>
-            {t.admin.dishes}
-          </h2>
           <button
             type="button"
             onClick={() => setDishModal("new")}
             disabled={categories.length === 0}
-            className="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-brand-gold px-5 text-sm font-semibold text-brand-dark disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-300 ease-in-out hover:bg-brand-gold-hover"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-brand-gold px-5 text-sm font-semibold text-brand-dark transition-colors duration-200 hover:bg-brand-gold-hover disabled:opacity-50"
           >
             <Plus className="size-4" />
             {t.admin.addDish}
           </button>
         </div>
+      </div>
 
-        {dishes.length === 0 ? (
-          <p
-            className="rounded-2xl border px-4 py-8 text-center text-sm"
-            style={{ borderColor: "var(--border-subtle)", backgroundColor: "var(--bg-card)", color: "var(--text-muted)" }}
-          >
-            {t.admin.noDishes}
-          </p>
-        ) : (
-          <div className="overflow-x-auto rounded-2xl border" style={{ borderColor: "var(--border-subtle)" }}>
-            <table className="min-w-full text-sm">
-              <thead style={{ backgroundColor: "var(--bg-surface)" }}>
-                <tr>
-                  <th className="px-4 py-3 text-start" style={{ color: "var(--text-muted)" }}>{t.admin.dishNameEn}</th>
-                  <th className="px-4 py-3 text-start" style={{ color: "var(--text-muted)" }}>{t.admin.price}</th>
-                  <th className="px-4 py-3 text-start" style={{ color: "var(--text-muted)" }}>{t.admin.available}</th>
-                  <th className="px-4 py-3 text-start" style={{ color: "var(--text-muted)" }}>{t.admin.actions}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {dishes.map((dish) => (
-                  <tr key={dish.id} className="border-t" style={{ borderColor: "var(--border-subtle)" }}>
-                    <td className="px-4 py-3" style={{ color: "var(--text-primary)" }}>{dish.name[locale]}</td>
-                    <td className="px-4 py-3 text-brand-gold">{dish.price} {t.common.price}</td>
-                    <td className="px-4 py-3">
-                      <ToggleSwitch
-                        checked={dish.available}
-                        onChange={() => toggleDishAvailability(dish.id)}
-                        label={dish.available ? t.admin.visible : t.admin.hidden}
-                      />
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-wrap gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setDishModal(dish)}
-                          className="flex items-center gap-1 rounded-full border px-3 py-1 text-xs transition-colors duration-300 hover:text-brand-gold"
-                          style={{ borderColor: "var(--border-default)", color: "var(--text-secondary)" }}
-                        >
-                          <Pencil className="size-3" />
-                          {t.admin.editDish}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => { if (window.confirm(t.admin.confirmDelete)) deleteDish(dish.id); }}
-                          className="flex items-center gap-1 rounded-full border border-red-500/40 px-3 py-1 text-xs text-red-400"
-                        >
-                          <Trash2 className="size-3" />
-                          {t.admin.deleteDish}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="scrollbar-none -mx-1 flex snap-x gap-2 overflow-x-auto px-1 py-0.5">
+          <CategoryChip
+            label={t.menu.categories.all}
+            active={activeCategory === "all"}
+            onClick={() => setActiveCategory("all")}
+          />
+          {categories.map((category) => (
+            <CategoryChip
+              key={category.id}
+              label={category.name[locale]}
+              active={activeCategory === category.id}
+              onClick={() => setActiveCategory(category.id)}
+            />
+          ))}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <label className="relative block flex-1 lg:w-72">
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder={t.common.searchMenu}
+              className="w-full rounded-full py-2.5 pe-4 ps-11 text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold/30"
+              style={{ border: "1px solid var(--border-default)", backgroundColor: "var(--bg-card)", color: "var(--text-primary)" }}
+            />
+            <Search className="pointer-events-none absolute start-4 top-1/2 size-4 -translate-y-1/2" style={{ color: "var(--text-muted)" }} />
+          </label>
+          {activeCategory !== "all" ? (
+            <>
+              <IconAction
+                label={t.admin.editCategory}
+                icon={Edit3}
+                onClick={() => {
+                  const category = categories.find((item) => item.id === activeCategory);
+                  if (category) setCategoryModal(category);
+                }}
+              />
+              <IconAction
+                label={t.admin.deleteCategory}
+                icon={Trash2}
+                danger
+                onClick={() => {
+                  if (!window.confirm(t.admin.confirmDelete)) return;
+                  const target = activeCategory;
+                  setActiveCategory("all");
+                  void runAction(target, () => deleteCategory(target));
+                }}
+              />
+            </>
+          ) : null}
+        </div>
+      </div>
+
+      {actionError ? (
+        <p className="rounded-xl border border-red-500/40 px-4 py-3 text-sm text-red-400">{actionError}</p>
+      ) : null}
+
+      {filteredDishes.length === 0 ? (
+        <p className="rounded-2xl border px-6 py-10 text-center text-sm" style={{ borderColor: "var(--border-subtle)", backgroundColor: "var(--bg-card)", color: "var(--text-muted)" }}>
+          {dishes.length === 0 ? t.admin.noDishes : t.common.noResults}
+        </p>
+      ) : (
+        <ul className="space-y-2">
+          {filteredDishes.map((dish) => (
+            <DishRow
+              key={dish.id}
+              dish={dish}
+              categoryLabel={categoryLabel(dish.categoryId)}
+              busy={busyId === dish.id}
+              onEdit={() => setDishModal(dish)}
+              onDelete={() => {
+                if (window.confirm(t.admin.confirmDelete)) {
+                  void runAction(dish.id, () => deleteDish(dish.id));
+                }
+              }}
+              onToggleAvailable={() => void runAction(dish.id, () => toggleDishAvailability(dish.id))}
+              onToggleFeatured={() =>
+                void runAction(dish.id, () => updateDish(dish.id, { featured: !dish.featured }))
+              }
+              onToggleBadge={(badge) => toggleBadge(dish, badge)}
+            />
+          ))}
+        </ul>
+      )}
 
       <CategoryModal
         open={categoryModal !== null}
@@ -502,7 +821,6 @@ export function MenuManagementContent() {
         onClose={() => setCategoryModal(null)}
         onSave={handleCategorySave}
       />
-
       <DishFormModal
         open={dishModal !== null}
         dish={dishModal === "new" ? null : dishModal}
@@ -516,25 +834,28 @@ export function MenuManagementContent() {
 
 /* ─── Shared Helpers ─── */
 
-function ModalActions({ onClose, saveLabel }: { onClose: () => void; saveLabel: string }) {
-  const { t } = useLocale();
+function CategoryChip({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
   return (
-    <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:justify-end">
-      <button
-        type="button"
-        onClick={onClose}
-        className="inline-flex min-h-10 items-center justify-center rounded-full border px-5 text-sm transition-colors duration-300"
-        style={{ borderColor: "var(--border-default)", color: "var(--text-secondary)" }}
-      >
-        {t.admin.cancel}
-      </button>
-      <button
-        type="submit"
-        className="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-brand-gold px-5 text-sm font-semibold text-brand-dark transition-all duration-300 ease-in-out hover:bg-brand-gold-hover"
-      >
-        <Check className="size-4" />
-        {saveLabel}
-      </button>
-    </div>
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className="shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-colors duration-200"
+      style={{
+        backgroundColor: active ? "var(--brand-gold, #F3A712)" : "var(--bg-card)",
+        color: active ? "#0B0B0B" : "var(--text-secondary)",
+        border: active ? "1px solid transparent" : "1px solid var(--border-default)",
+      }}
+    >
+      {label}
+    </button>
   );
 }

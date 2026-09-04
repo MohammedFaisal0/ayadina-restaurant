@@ -3,7 +3,7 @@
 import { useCallback, useId, useRef, useState } from "react";
 import { Upload, ImagePlus, X, Loader2 } from "lucide-react";
 import { useLocale } from "@/i18n/locale-context";
-import { getAuthToken } from "@/lib/api";
+import { getAuthToken, handleExpiredSession } from "@/lib/api";
 
 const MAX_FILE_SIZE_MB = 3;
 
@@ -11,9 +11,10 @@ type ImageUploadProps = {
   value: string;
   onChange: (value: string) => void;
   required?: boolean;
+  label?: string;
 };
 
-export function ImageUpload({ value, onChange, required = false }: ImageUploadProps) {
+export function ImageUpload({ value, onChange, required = false, label }: ImageUploadProps) {
   const { t } = useLocale();
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -44,6 +45,7 @@ export function ImageUpload({ value, onChange, required = false }: ImageUploadPr
           headers.Authorization = `Bearer ${token}`;
         }
 
+        // No Content-Type here on purpose: the browser adds the multipart boundary.
         const response = await fetch("/api/upload", {
           method: "POST",
           headers,
@@ -51,6 +53,8 @@ export function ImageUpload({ value, onChange, required = false }: ImageUploadPr
         });
 
         const body = (await response.json().catch(() => null)) as { url?: string; error?: string } | null;
+
+        if (response.status === 401 && token) handleExpiredSession();
 
         if (!response.ok || !body?.url) {
           throw new Error(body?.error || t.admin.uploadFailed);
@@ -85,7 +89,7 @@ export function ImageUpload({ value, onChange, required = false }: ImageUploadPr
   return (
     <div className="space-y-3">
       <span style={{ color: "var(--text-secondary)" }} className="text-sm">
-        {t.admin.uploadImage}
+        {label ?? t.admin.uploadImage}
       </span>
 
       <div

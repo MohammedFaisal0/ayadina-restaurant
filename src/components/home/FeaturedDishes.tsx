@@ -8,10 +8,11 @@ import { useData } from "@/context/DataContext";
 import { useLocale } from "@/i18n/locale-context";
 import { getDishCopy } from "@/types/data";
 import { routes } from "@/lib/paths";
+import { bilingualOr } from "@/lib/cms-copy";
 
 export function FeaturedDishes() {
   const { t, locale, dir } = useLocale();
-  const { featuredDishes } = useData();
+  const { featuredDishes, siteSettings } = useData();
 
   if (featuredDishes.length === 0) return null;
 
@@ -21,8 +22,8 @@ export function FeaturedDishes() {
     <section className="px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
       <div className="mx-auto w-full max-w-7xl space-y-8">
         <SectionHeading
-          title={t.home.featuredTitle}
-          subtitle={t.home.featuredSubtitle}
+          title={bilingualOr(siteSettings.featuredTitle, locale, t.home.featuredTitle)}
+          subtitle={bilingualOr(siteSettings.featuredSubtitle, locale, t.home.featuredSubtitle)}
         />
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">

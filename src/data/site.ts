@@ -179,9 +179,6 @@ export const branches: Branch[] = [
   },
 ];
 
-export const WHATSAPP_NUMBER = "966500000000";
-export const PRIMARY_PHONE = "+966112345678";
-
 export const galleryImages = [
   "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80",
   "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=800&q=80",

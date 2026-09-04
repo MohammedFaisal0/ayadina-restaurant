@@ -33,10 +33,14 @@ export async function PUT(
 
   try {
     const { id } = await params;
+    const dishId = Number(id);
+    if (!Number.isInteger(dishId)) {
+      return NextResponse.json({ error: "Invalid dish id" }, { status: 400 });
+    }
     const body = await request.json();
 
     const dish = await prisma.dish.update({
-      where: { id: Number(id) },
+      where: { id: dishId },
       data: {
         ...(body.categoryId !== undefined && { categoryId: Number(body.categoryId) }),
         ...(body.nameAr !== undefined && { nameAr: body.nameAr }),

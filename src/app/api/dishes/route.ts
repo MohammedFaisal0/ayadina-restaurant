@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
+import { getOrCreateDefaultRestaurantId } from "@/lib/restaurant";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const auth = requireAuth(request);
+  if (auth instanceof NextResponse) return auth;
+
   try {
     const dishes = await prisma.dish.findMany({
       orderBy: { displayOrder: "asc" },
@@ -41,8 +45,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const restaurantId = await getOrCreateDefaultRestaurantId();
+
     const dish = await prisma.dish.create({
       data: {
+        restaurantId,
         categoryId: Number(categoryId),
         nameAr,
         nameEn,

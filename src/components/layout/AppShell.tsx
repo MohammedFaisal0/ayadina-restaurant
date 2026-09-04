@@ -11,17 +11,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { dir, locale } = useLocale();
   const isAdminRoute = isAdminPath(pathname);
 
-  const shell = (
-    <div
-      dir={dir}
-      data-locale={locale}
-      className="locale-transition flex min-h-screen flex-col transition-all duration-300 ease-in-out"
-    >
-      {children}
-    </div>
-  );
-
-  if (isAdminRoute) return shell;
+  if (isAdminRoute) {
+    return (
+      <div
+        dir={dir}
+        data-locale={locale}
+        className="locale-transition flex min-h-screen flex-col transition-all duration-300 ease-in-out"
+      >
+        <div key={pathname} className="page-enter flex min-h-screen flex-col">
+          {children}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -30,7 +32,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       className="locale-transition flex min-h-screen flex-col transition-all duration-300 ease-in-out"
     >
       <SiteHeader />
-      <main className="flex-1 transition-all duration-300 ease-in-out">{children}</main>
+      <main key={pathname} className="page-enter flex-1 transition-all duration-300 ease-in-out">
+        {children}
+      </main>
       <SiteFooter />
     </div>
   );

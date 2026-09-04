@@ -9,11 +9,21 @@ import { useLocale } from "@/i18n/locale-context";
 import { getOfferCopy } from "@/types/data";
 import type { Offer } from "@/types/data";
 import { routes } from "@/lib/paths";
+import { bilingualOr } from "@/lib/cms-copy";
 
 const AUTOPLAY_MS = 5_000;
 
-export function AnnouncementTeaser() {
+/** CMS-driven eyebrow + CTA labels, falling back to the static dictionary. */
+function useAnnouncementCopy() {
   const { t, locale } = useLocale();
+  const { siteSettings } = useData();
+  return {
+    title: bilingualOr(siteSettings.announcementTitle, locale, t.home.announcementTitle),
+    cta: bilingualOr(siteSettings.announcementCta, locale, t.home.announcementCta),
+  };
+}
+
+export function AnnouncementTeaser() {
   const { homeAnnouncements } = useData();
 
   const offers = useMemo(
@@ -30,7 +40,8 @@ export function AnnouncementTeaser() {
 /* ── Single-offer static banner ── */
 
 function StaticBanner({ offer }: { offer: Offer }) {
-  const { t, locale } = useLocale();
+  const { locale } = useLocale();
+  const announcement = useAnnouncementCopy();
   const copy = getOfferCopy(offer, locale);
 
   return (
@@ -59,7 +70,7 @@ function StaticBanner({ offer }: { offer: Offer }) {
               <div className="flex items-center gap-2">
                 <Sparkles className="size-4 text-brand-gold" />
                 <p className="text-xs uppercase tracking-[0.2em] text-brand-gold">
-                  {t.home.announcementTitle}
+                  {announcement.title}
                 </p>
               </div>
               <h2
@@ -78,7 +89,7 @@ function StaticBanner({ offer }: { offer: Offer }) {
                 href={routes.offers}
                 className="inline-flex min-h-11 w-fit items-center justify-center rounded-full bg-brand-gold px-6 text-sm font-semibold text-brand-dark transition-all duration-300 ease-in-out hover:bg-brand-gold-hover hover:shadow-lg hover:shadow-brand-gold/20"
               >
-                {t.home.announcementCta}
+                {announcement.cta}
               </Link>
             </div>
           </div>
@@ -91,7 +102,8 @@ function StaticBanner({ offer }: { offer: Offer }) {
 /* ── Multi-offer carousel ── */
 
 function Carousel({ offers }: { offers: Offer[] }) {
-  const { t, locale } = useLocale();
+  const { locale } = useLocale();
+  const announcement = useAnnouncementCopy();
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -150,7 +162,7 @@ function Carousel({ offers }: { offers: Offer[] }) {
           onKeyDown={onKeyDown}
           tabIndex={0}
           role="region"
-          aria-label={t.home.announcementTitle}
+          aria-label={announcement.title}
           aria-roledescription="carousel"
         >
           {/* Slides track */}
@@ -180,7 +192,7 @@ function Carousel({ offers }: { offers: Offer[] }) {
                       <div className="flex items-center gap-2">
                         <Sparkles className="size-4 text-brand-gold" />
                         <p className="text-xs uppercase tracking-[0.2em] text-brand-gold">
-                          {t.home.announcementTitle}
+                          {announcement.title}
                         </p>
                       </div>
                       <h2
@@ -199,7 +211,7 @@ function Carousel({ offers }: { offers: Offer[] }) {
                         href={routes.offers}
                         className="inline-flex min-h-11 w-fit items-center justify-center rounded-full bg-brand-gold px-6 text-sm font-semibold text-brand-dark transition-all duration-300 ease-in-out hover:bg-brand-gold-hover hover:shadow-lg hover:shadow-brand-gold/20"
                       >
-                        {t.home.announcementCta}
+                        {announcement.cta}
                       </Link>
                     </div>
                   </div>

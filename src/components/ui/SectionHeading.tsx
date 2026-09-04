@@ -101,7 +101,7 @@ export function PageHero({ title, subtitle, children }: PageHeroProps) {
         backgroundColor: "var(--bg-surface)",
       }}
     >
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
         <SectionHeading title={title} subtitle={subtitle} />
         {children}
       </div>

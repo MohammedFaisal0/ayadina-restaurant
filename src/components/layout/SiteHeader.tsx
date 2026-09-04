@@ -7,6 +7,8 @@ import { Menu, X, Sun, Moon } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useLocale } from "@/i18n/locale-context";
 import { useTheme } from "@/context/ThemeContext";
+import { useData } from "@/context/DataContext";
+import { textOr } from "@/lib/cms-copy";
 import { routes } from "@/lib/paths";
 
 const navLinks = [
@@ -21,7 +23,12 @@ export function SiteHeader() {
   const pathname = usePathname();
   const { t, dir } = useLocale();
   const { theme, toggleTheme } = useTheme();
+  const { siteSettings } = useData();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const logoUrl = textOr(siteSettings.logoUrl, "/logo.png");
+  const brandEn = textOr(siteSettings.brandName.en, "Ayadina Grills");
+  const brandAr = textOr(siteSettings.brandName.ar, "مشويات أيادينا");
 
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
@@ -46,17 +53,17 @@ export function SiteHeader() {
           >
             <div className="flex items-center gap-2.5">
               <img
-                src="/logo.png"
-                alt="Ayadina Grills"
+                src={logoUrl}
+                alt={brandEn}
                 className="h-9 w-9 shrink-0 rounded-full object-contain drop-shadow-[0_0_10px_rgba(217,119,6,0.3)] sm:h-11 sm:w-11"
               />
               <div className="min-w-0">
-                <span className="block truncate text-brand-gold">Ayadina Grills</span>
+                <span className="block truncate text-brand-gold">{brandEn}</span>
                 <span
                   className="block truncate text-xs sm:text-sm"
                   style={{ color: "var(--text-muted)" }}
                 >
-                  مشويات أيادينا
+                  {brandAr}
                 </span>
               </div>
             </div>
@@ -153,11 +160,11 @@ export function SiteHeader() {
           >
             <div className="flex items-center gap-2">
               <img
-                src="/logo.png"
-                alt="Ayadina Grills"
+                src={logoUrl}
+                alt={brandEn}
                 className="h-8 w-8 shrink-0 rounded-full object-contain drop-shadow-[0_0_10px_rgba(217,119,6,0.3)]"
               />
-              <p className="text-sm font-semibold text-brand-gold">Ayadina Grills</p>
+              <p className="text-sm font-semibold text-brand-gold">{brandEn}</p>
             </div>
             <button
               type="button"

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Tag, Sun, Moon, LogOut, ExternalLink } from "lucide-react";
+import { Home, UtensilsCrossed, Tag, Settings, BookOpen, Phone, Sun, Moon, LogOut, ExternalLink } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useLocale } from "@/i18n/locale-context";
 import { useTheme } from "@/context/ThemeContext";
@@ -10,8 +10,12 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { routes } from "@/lib/paths";
 
 const adminLinks = [
-  { href: routes.adminMenu, key: "menuManagement" as const, icon: LayoutDashboard },
+  { href: routes.adminSettings, key: "generalSettings" as const, icon: Settings },
+  { href: routes.adminHome, key: "homePageCms" as const, icon: Home },
+  { href: routes.adminMenu, key: "menuManagement" as const, icon: UtensilsCrossed },
   { href: routes.adminOffers, key: "offersManagement" as const, icon: Tag },
+  { href: routes.adminAbout, key: "aboutPageCms" as const, icon: BookOpen },
+  { href: routes.adminContact, key: "contactPageCms" as const, icon: Phone },
 ];
 
 export function AdminSidebar() {

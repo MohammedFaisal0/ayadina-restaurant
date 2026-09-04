@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Lock, User, Flame } from "lucide-react";
+import { Eye, EyeOff, Flame, Lock, User } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useLocale } from "@/i18n/locale-context";
 import { routes } from "@/lib/paths";
@@ -13,6 +13,7 @@ export function AdminLoginForm() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -36,7 +37,7 @@ export function AdminLoginForm() {
       style={{ backgroundColor: "var(--bg-page)" }}
     >
       <div
-        className="w-full max-w-md rounded-2xl border p-6 backdrop-blur-xl sm:p-8"
+        className="animate-fade-scale w-full max-w-md rounded-2xl border p-6 backdrop-blur-xl sm:p-8"
         style={{
           borderColor: "var(--glass-border)",
           backgroundColor: "var(--glass-bg)",
@@ -66,7 +67,7 @@ export function AdminLoginForm() {
             </span>
             <div className="relative">
               <User
-                className="absolute start-3 top-1/2 size-4 -translate-y-1/2"
+                className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2"
                 style={{ color: "var(--text-muted)" }}
               />
               <input
@@ -91,22 +92,31 @@ export function AdminLoginForm() {
             </span>
             <div className="relative">
               <Lock
-                className="absolute start-3 top-1/2 size-4 -translate-y-1/2"
+                className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2"
                 style={{ color: "var(--text-muted)" }}
               />
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 autoComplete="current-password"
                 required
-                className="w-full rounded-xl border py-3 pe-4 ps-10 text-sm transition-all duration-300 ease-in-out focus:border-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold/30"
+                className="w-full rounded-xl border py-3 pe-12 ps-10 text-sm transition-all duration-300 ease-in-out focus:border-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold/30"
                 style={{
                   borderColor: "var(--border-default)",
                   backgroundColor: "var(--bg-surface)",
                   color: "var(--text-primary)",
                 }}
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword((current) => !current)}
+                aria-label={showPassword ? t.admin.hidePassword : t.admin.showPassword}
+                className="absolute end-2 top-1/2 inline-flex size-9 -translate-y-1/2 items-center justify-center rounded-lg transition-colors hover:text-brand-gold"
+                style={{ color: "var(--text-muted)" }}
+              >
+                {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+              </button>
             </div>
           </label>
 
