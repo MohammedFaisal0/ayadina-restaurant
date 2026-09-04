@@ -3,13 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Menu, X, Sun, Moon } from "lucide-react";
+import { createPortal } from "react-dom";
+import { Menu, X, Sun, Moon, Phone, MessageSquare } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useLocale } from "@/i18n/locale-context";
 import { useTheme } from "@/context/ThemeContext";
 import { useData } from "@/context/DataContext";
-import { textOr } from "@/lib/cms-copy";
+import { bilingualOr, textOr } from "@/lib/cms-copy";
 import { routes } from "@/lib/paths";
+import { toTelHref, toWhatsAppHref } from "@/lib/phone";
 
 const navLinks = [
   { href: routes.home, key: "home" as const },
@@ -21,21 +23,203 @@ const navLinks = [
 
 export function SiteHeader() {
   const pathname = usePathname();
-  const { t, dir } = useLocale();
+  const { t, dir, locale } = useLocale();
   const { theme, toggleTheme } = useTheme();
-  const { siteSettings } = useData();
+  const { siteSettings, branches } = useData();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [portalReady, setPortalReady] = useState(false);
 
   const logoUrl = textOr(siteSettings.logoUrl, "/logo.png");
   const brandEn = textOr(siteSettings.brandName.en, "Ayadina Grills");
   const brandAr = textOr(siteSettings.brandName.ar, "مشويات أيادينا");
+  const brandPrimary = locale === "ar" ? brandAr : brandEn;
+  const whatsappCta = bilingualOr(
+    siteSettings.contactWhatsappCta,
+    locale,
+    t.contact.sendWhatsapp,
+  );
 
-  useEffect(() => {
-    document.body.style.overflow = mobileOpen ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
-  }, [mobileOpen]);
+  const mainBranch =
+    branches.find((b) => b.isMainBranch && b.phone.trim()) ??
+    branches.find((b) => b.phone.trim());
+  const branchPhone = mainBranch?.phone.trim() ?? "";
 
   const isRtl = dir === "rtl";
+  const closeMenu = () => setMobileOpen(false);
+
+  useEffect(() => {
+    setPortalReady(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeMenu();
+    };
+    window.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [mobileOpen]);
+
+  const drawer = portalReady
+    ? createPortal(
+        <div
+          id="mobile-nav"
+          className={`fixed inset-0 z-[100] lg:hidden ${
+            mobileOpen ? "pointer-events-auto" : "pointer-events-none"
+          }`}
+          aria-hidden={!mobileOpen}
+        >
+          <button
+            type="button"
+            className={`absolute inset-0 bg-black/60 backdrop-blur-md transition-opacity duration-300 ${
+              mobileOpen ? "opacity-100" : "opacity-0"
+            }`}
+            aria-label={t.nav.closeMenu}
+            onClick={closeMenu}
+          />
+
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label={t.nav.openMenu}
+            className={`absolute inset-y-0 flex w-[min(100%,22rem)] flex-col overflow-hidden shadow-2xl transition-transform duration-300 ease-out ${
+              isRtl
+                ? `end-0 rounded-s-3xl border-s ${mobileOpen ? "translate-x-0" : "translate-x-full"}`
+                : `start-0 rounded-e-3xl border-e ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`
+            }`}
+            style={{
+              borderColor: "var(--modal-border)",
+              backgroundColor: "var(--modal-panel)",
+            }}
+          >
+            <div
+              className="flex shrink-0 items-center justify-between gap-3 border-b px-5 py-4"
+              style={{ borderColor: "var(--modal-border)" }}
+            >
+              <div className="flex min-w-0 items-center gap-3">
+                <img
+                  src={logoUrl}
+                  alt={brandPrimary}
+                  className="h-10 w-10 shrink-0 rounded-full object-contain drop-shadow-[0_0_10px_rgba(217,119,6,0.3)]"
+                />
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-brand-gold">
+                    {brandPrimary}
+                  </p>
+                  <p
+                    className="truncate text-xs"
+                    style={{ color: "var(--text-muted)" }}
+                  >
+                    {locale === "ar" ? brandEn : brandAr}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="inline-flex size-10 shrink-0 items-center justify-center rounded-full transition-colors hover:text-brand-gold"
+                style={{
+                  backgroundColor: "var(--modal-close-bg)",
+                  color: "var(--text-secondary)",
+                }}
+                aria-label={t.nav.closeMenu}
+                onClick={closeMenu}
+              >
+                <X className="size-5" />
+              </button>
+            </div>
+
+            <nav
+              className="flex flex-1 flex-col gap-1.5 overflow-y-auto px-4 py-5"
+              aria-label="Mobile navigation"
+            >
+              {navLinks.map(({ href, key }) => {
+                const isActive = pathname === href;
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    onClick={closeMenu}
+                    className="rounded-2xl px-4 py-3.5 text-lg font-semibold transition-all duration-200 active:scale-[0.98]"
+                    style={{
+                      backgroundColor: isActive
+                        ? "var(--brand-gold, #F3A712)"
+                        : "transparent",
+                      color: isActive ? "#0B0B0B" : "var(--text-primary)",
+                    }}
+                  >
+                    {t.nav[key]}
+                  </Link>
+                );
+              })}
+            </nav>
+
+            <div
+              className="shrink-0 space-y-4 border-t px-5 py-5"
+              style={{ borderColor: "var(--modal-border)" }}
+            >
+              <div className="flex items-center justify-center gap-3">
+                <LanguageSwitcher />
+                <button
+                  type="button"
+                  onClick={toggleTheme}
+                  aria-label={
+                    theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+                  }
+                  className="inline-flex size-10 items-center justify-center rounded-full transition-all duration-300 hover:text-brand-gold"
+                  style={{
+                    border: "1px solid var(--border-default)",
+                    backgroundColor: "var(--bg-card)",
+                    color: "var(--text-secondary)",
+                  }}
+                >
+                  {theme === "dark" ? (
+                    <Sun className="size-4" />
+                  ) : (
+                    <Moon className="size-4" />
+                  )}
+                </button>
+              </div>
+
+              {branchPhone ? (
+                <div className="flex flex-col gap-2">
+                  <a
+                    href={toTelHref(branchPhone)}
+                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border text-sm font-medium transition-colors hover:border-brand-gold hover:text-brand-gold"
+                    style={{
+                      borderColor: "var(--border-default)",
+                      color: "var(--text-secondary)",
+                    }}
+                  >
+                    <Phone className="size-4" />
+                    <span dir="ltr" className="unicode-bidi-isolate">
+                      {branchPhone}
+                    </span>
+                  </a>
+                  <a
+                    href={toWhatsAppHref(branchPhone)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-emerald-600 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
+                  >
+                    <MessageSquare className="size-4" />
+                    {whatsappCta}
+                  </a>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </div>,
+        document.body,
+      )
+    : null;
 
   return (
     <>
@@ -69,6 +253,7 @@ export function SiteHeader() {
             </div>
           </Link>
 
+          {/* Desktop inline links — hidden on mobile */}
           <nav
             className="hidden items-center gap-1 lg:flex"
             aria-label="Main navigation"
@@ -81,7 +266,9 @@ export function SiteHeader() {
                   href={href}
                   className="rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 ease-in-out"
                   style={{
-                    backgroundColor: isActive ? "var(--brand-gold, #F3A712)" : "transparent",
+                    backgroundColor: isActive
+                      ? "var(--brand-gold, #F3A712)"
+                      : "transparent",
                     color: isActive ? "#0B0B0B" : "var(--text-secondary)",
                   }}
                 >
@@ -92,20 +279,29 @@ export function SiteHeader() {
           </nav>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            <LanguageSwitcher />
-            <button
-              type="button"
-              onClick={toggleTheme}
-              aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-              className="inline-flex size-10 items-center justify-center rounded-full transition-all duration-300 ease-in-out hover:text-brand-gold"
-              style={{
-                border: "1px solid var(--border-default)",
-                backgroundColor: "var(--bg-card)",
-                color: "var(--text-secondary)",
-              }}
-            >
-              {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
-            </button>
+            <div className="hidden sm:contents">
+              <LanguageSwitcher />
+              <button
+                type="button"
+                onClick={toggleTheme}
+                aria-label={
+                  theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+                }
+                className="inline-flex size-10 items-center justify-center rounded-full transition-all duration-300 ease-in-out hover:text-brand-gold"
+                style={{
+                  border: "1px solid var(--border-default)",
+                  backgroundColor: "var(--bg-card)",
+                  color: "var(--text-secondary)",
+                }}
+              >
+                {theme === "dark" ? (
+                  <Sun className="size-4" />
+                ) : (
+                  <Moon className="size-4" />
+                )}
+              </button>
+            </div>
+
             <button
               type="button"
               className="inline-flex size-10 items-center justify-center rounded-full transition-all duration-300 ease-in-out hover:text-brand-gold lg:hidden"
@@ -117,7 +313,7 @@ export function SiteHeader() {
               aria-expanded={mobileOpen}
               aria-controls="mobile-nav"
               aria-label={mobileOpen ? t.nav.closeMenu : t.nav.openMenu}
-              onClick={() => setMobileOpen((o) => !o)}
+              onClick={() => setMobileOpen((open) => !open)}
             >
               {mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
             </button>
@@ -125,83 +321,7 @@ export function SiteHeader() {
         </div>
       </header>
 
-      {/* Mobile Nav Drawer */}
-      <div
-        id="mobile-nav"
-        className={`fixed inset-0 z-50 lg:hidden transition-opacity duration-300 ease-in-out ${
-          mobileOpen ? "visible" : "invisible pointer-events-none"
-        }`}
-        aria-hidden={!mobileOpen}
-      >
-        <button
-          type="button"
-          className={`absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity duration-300 ease-in-out ${
-            mobileOpen ? "opacity-100" : "opacity-0"
-          }`}
-          aria-label={t.nav.closeMenu}
-          onClick={() => setMobileOpen(false)}
-        />
-
-        {/* Drawer panel - slides from the correct side based on dir */}
-        <div
-          className={`absolute inset-y-0 flex w-full max-w-sm flex-col shadow-2xl transition-all duration-300 ease-in-out ${
-            isRtl
-              ? `end-0 border-s ${mobileOpen ? "translate-x-0" : "translate-x-full"}`
-              : `start-0 border-e ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`
-          }`}
-          style={{
-            borderColor: "var(--border-subtle)",
-            backgroundColor: "var(--bg-page)",
-          }}
-        >
-          <div
-            className="flex items-center justify-between border-b px-4 py-4"
-            style={{ borderColor: "var(--border-subtle)" }}
-          >
-            <div className="flex items-center gap-2">
-              <img
-                src={logoUrl}
-                alt={brandEn}
-                className="h-8 w-8 shrink-0 rounded-full object-contain drop-shadow-[0_0_10px_rgba(217,119,6,0.3)]"
-              />
-              <p className="text-sm font-semibold text-brand-gold">{brandEn}</p>
-            </div>
-            <button
-              type="button"
-              className="inline-flex size-10 items-center justify-center rounded-full transition-colors"
-              style={{
-                border: "1px solid var(--border-default)",
-                backgroundColor: "var(--bg-card)",
-                color: "var(--text-secondary)",
-              }}
-              aria-label={t.nav.closeMenu}
-              onClick={() => setMobileOpen(false)}
-            >
-              <X className="size-5" />
-            </button>
-          </div>
-
-          <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-4" aria-label="Mobile navigation">
-            {navLinks.map(({ href, key }) => {
-              const isActive = pathname === href;
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  onClick={() => setMobileOpen(false)}
-                  className="rounded-xl px-4 py-3 text-base font-medium transition-all duration-300 ease-in-out"
-                  style={{
-                    backgroundColor: isActive ? "var(--brand-gold, #F3A712)" : "transparent",
-                    color: isActive ? "#0B0B0B" : "var(--text-secondary)",
-                  }}
-                >
-                  {t.nav[key]}
-                </Link>
-              );
-            })}
-          </nav>
-        </div>
-      </div>
+      {drawer}
     </>
   );
 }
