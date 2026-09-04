@@ -96,10 +96,10 @@ IMGBB_API_KEY="your-imgbb-api-key"
 
 ```bash
 npx prisma generate
-npx prisma db seed
+npm run db:seed
 ```
 
-> **ملاحظة:** سكربت `npm run build` على Vercel ينفّذ `prisma generate` ثم `prisma db seed` ثم `next build`. ملف البذر يستخدم `upsert` حتى لا تفشل عمليات البناء المتكررة بسبب المفاتيح المكررة.
+> **ملاحظة:** سكربت `npm run build` (ومعه نشر Vercel) ينفّذ `prisma generate` ثم `next build` فقط — **بدون seed** — حتى لا تُستبدل بيانات العميل عند كل إعادة نشر. شغّل `npm run db:seed` يدوياً مرة واحدة عند الإعداد الأولي فقط.
 
 ### 4. تشغيل التطوير | Development
 
@@ -130,7 +130,8 @@ npm run dev
 
 ```bash
 npm run dev      # خادم التطوير
-npm run build    # prisma generate + seed + next build
+npm run build    # prisma generate + next build (بدون seed)
+npm run db:seed  # بذر أولي يدوياً فقط — لا يشغّله البناء
 npm run start    # تشغيل البناء للإنتاج
 npm run lint     # ESLint
 ```
